@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="GymClub.Application/GymClub.Application.csproj" />
+    <Project Path="GymClub.Domain/GymClub.Domain.csproj" />
+    <Project Path="GymClub.Infrastructure/GymClub.Infrastructure.csproj" />
+    <Project Path="GymClub.Web/GymClub.Web.csproj" />
+  </Folder>
+</Solution>
