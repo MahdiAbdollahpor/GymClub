@@ -1,0 +1,74 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Articles.Dtos.ArticleCardDto>
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "مدیریت مقالات";
+}
+
+<div class="flex items-center justify-between mb-4">
+    <form method="get" class="flex gap-2">
+        <input name="search" value="@ViewBag.Search" class="k-input" style="width:260px" placeholder="جستجو..." />
+        <select name="status" class="k-select" style="width:150px">
+            <option value="">همه وضعیت</option>
+            <option value="@ArticleStatus.Draft" selected="@(ViewBag.Status as ArticleStatus? == ArticleStatus.Draft)">پیش‌نویس</option>
+            <option value="@ArticleStatus.Published" selected="@(ViewBag.Status as ArticleStatus? == ArticleStatus.Published)">منتشر شده</option>
+        </select>
+        <button class="k-btn k-btn-dark k-btn-md">فیلتر</button>
+    </form>
+    <a asp-action="Create" class="k-btn k-btn-primary k-btn-md">+ مقاله جدید</a>
+</div>
+
+<div class="k-card p-0 overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3 font-semibold">عنوان</th>
+                <th class="text-right p-3 font-semibold">دسته</th>
+                <th class="text-right p-3 font-semibold">وضعیت</th>
+                <th class="text-right p-3 font-semibold">بازدید</th>
+                <th class="text-right p-3 font-semibold">تاریخ</th>
+                <th class="text-left p-3 font-semibold">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var a in Model.Items)
+            {
+                <tr class="border-t border-bordergray hover:bg-warm">
+                    <td class="p-3 font-medium">@a.Title</td>
+                    <td class="p-3 text-midgray">@(a.CategoryTitle ?? "—")</td>
+                    <td class="p-3">
+                        @if (a.PublishedAt.HasValue)
+                        {
+                            <span class="k-chip k-chip-success">منتشر</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-neutral">پیش‌نویس</span>
+                        }
+                    </td>
+                    <td class="p-3 font-mono text-[13px]">@a.ViewCount</td>
+                    <td class="p-3 text-midgray font-mono text-[13px]">@a.PublishedAt?.ToString("yyyy/MM/dd")</td>
+                    <td class="p-3 text-left">
+                        <a asp-action="Edit" asp-route-id="@a.Id" class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
+                        <form asp-action="Delete" asp-route-id="@a.Id" method="post" class="inline"
+                              onsubmit="return confirm('حذف شود؟')">
+                            <button type="submit" class="k-btn k-btn-ghost k-btn-sm" style="color:#CC0000">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="flex justify-center gap-1 mt-6">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.Search"
+               asp-route-status="@ViewBag.Status"
+               class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">@i</a>
+        }
+    </div>
+}

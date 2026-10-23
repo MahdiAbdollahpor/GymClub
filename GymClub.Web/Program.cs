@@ -1,6 +1,8 @@
 ﻿using GymClub.Application;
+using GymClub.Application.Common.Interfaces;
 using GymClub.Infrastructure;
 using GymClub.Infrastructure.Persistence.Seed;
+using GymClub.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,12 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllersWithViews();
+
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+
 
 var app = builder.Build();
 

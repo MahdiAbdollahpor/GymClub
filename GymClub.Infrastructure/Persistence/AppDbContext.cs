@@ -13,6 +13,11 @@ public class AppDbContext
 
     public override DbSet<User> Users => base.Users;
 
+    public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
+
+    public DbSet<Article> Articles => Set<Article>();
+    public DbSet<ArticleCategory> ArticleCategories => Set<ArticleCategory>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

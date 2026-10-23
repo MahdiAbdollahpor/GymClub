@@ -1,0 +1,47 @@
+﻿@model GymClub.Application.Auth.Commands.Login.LoginCommand
+@{
+    ViewData["Title"] = "ورود";
+}
+
+<div class="k-auth-wrapper">
+    <div class="k-auth-card">
+        <div class="k-label mb-2">خوش آمدید</div>
+        <h2>ورود به حساب</h2>
+        <p class="k-subtitle">با شماره موبایل و رمز عبور خود وارد شوید.</p>
+
+        <form asp-action="Login" method="post">
+            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="k-alert"></div>
+
+            <div class="mb-4">
+                <label asp-for="PhoneNumber" class="k-form-label">شماره موبایل</label>
+                <input asp-for="PhoneNumber" class="k-input" dir="ltr" placeholder="09121234567" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Password" class="k-form-label">رمز عبور</label>
+                <input asp-for="Password" type="password" class="k-input" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-6">
+                <label class="k-check-label">
+                    <input asp-for="RememberMe" class="k-checkbox" />
+                    <span>مرا به خاطر بسپار</span>
+                </label>
+            </div>
+
+            <button type="submit" class="k-btn k-btn-primary k-btn-md w-100">ورود</button>
+
+            <div class="mt-6 flex justify-between text-[13px]">
+                <a asp-action="Register" class="k-link">ثبت‌نام</a>
+                <a asp-action="ForgotPassword" class="k-link">فراموشی رمز</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

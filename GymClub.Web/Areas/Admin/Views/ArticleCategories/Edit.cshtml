@@ -1,0 +1,39 @@
+﻿@model GymClub.Application.ArticleCategories.Commands.Update.UpdateArticleCategoryCommand
+@using GymClub.Application.Articles.Dtos
+@{
+    ViewData["Title"] = "دسته جدید";
+    var categories = ViewBag.Categories as List<ArticleCategoryDto> ?? new();
+}
+
+<div class="k-card max-w-[600px]">
+    <form asp-action="edit" asp-route-id="@Model.Id method="post">
+        
+        <div class="mb-4">
+            <label class="k-form-label">عنوان</label>
+            <input asp-for="Title" class="k-input" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div class="mb-4">
+            <label class="k-form-label">دسته والد</label>
+            <select asp-for="ParentId" class="k-select">
+                <option value="">— بدون والد —</option>
+                @foreach (var c in categories)
+                {
+                    <option value="@c.Id">@c.Title</option>
+                }
+            </select>
+        </div>
+        <div class="mb-6">
+            <label class="k-form-label">ترتیب نمایش</label>
+            <input asp-for="SortOrder" type="number" class="k-input" />
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="k-btn k-btn-primary k-btn-md">ذخیره</button>
+            <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,81 @@
+﻿@model GymClub.Application.Articles.Commands.UpdateArticle.UpdateArticleCommand
+@using GymClub.Application.Articles.Dtos
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "ویرایش مقاله";
+    var categories = ViewBag.Categories as List<ArticleCategoryDto> ?? new();
+}
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-4">
+        <div class="k-card">
+            <input type="hidden" asp-for="Id" />
+            <div class="mb-4">
+                <label class="k-form-label">عنوان</label>
+                <input asp-for="Title" class="k-input" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="mb-4">
+                <label class="k-form-label">خلاصه</label>
+                <textarea asp-for="Summary" class="k-textarea" rows="3"></textarea>
+                <span asp-validation-for="Summary" class="text-danger"></span>
+            </div>
+            <div>
+                <label class="k-form-label">محتوا (HTML)</label>
+                <textarea asp-for="ContentHtml" class="k-textarea" rows="18" dir="ltr"></textarea>
+                <span asp-validation-for="ContentHtml" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-4">
+        <div class="k-card">
+            <h4 class="k-label mb-3">تنظیمات انتشار</h4>
+            <div class="space-y-3">
+                <div>
+                    <label class="k-form-label">نوع</label>
+                    <select asp-for="Type" class="k-select">
+                        <option value="@ArticleType.Training">تمرین</option>
+                        <option value="@ArticleType.Nutrition">تغذیه</option>
+                        <option value="@ArticleType.ClubIntro">معرفی باشگاه</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="k-form-label">دسته</label>
+                    <select asp-for="CategoryId" class="k-select">
+                        <option value="">— بدون دسته —</option>
+                        @foreach (var c in categories)
+                        {
+                            <option value="@c.Id">@c.Title</option>
+                        }
+                    </select>
+                </div>
+                <label class="k-check-label">
+                    <input asp-for="Publish" class="k-checkbox" />
+                    <span>انتشار فوری</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="k-card">
+            <h4 class="k-label mb-3">رسانه</h4>
+            <div class="mb-3">
+                <label class="k-form-label">آدرس عکس کاور</label>
+                <input asp-for="CoverImageUrl" class="k-input" dir="ltr" placeholder="https://..." />
+            </div>
+            <div>
+                <label class="k-form-label">آدرس ویدیو</label>
+                <input asp-for="VideoUrl" class="k-input" dir="ltr" placeholder="https://..." />
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="k-btn k-btn-primary k-btn-md flex-1">ذخیره</button>
+            <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

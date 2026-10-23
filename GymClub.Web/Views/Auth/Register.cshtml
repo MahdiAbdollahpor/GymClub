@@ -1,0 +1,45 @@
+﻿@model GymClub.Application.Auth.Commands.Register.RegisterCommand
+@{
+    ViewData["Title"] = "ثبت‌نام";
+}
+
+<div class="k-auth-wrapper">
+    <div class="k-auth-card">
+        <div class="k-label mb-2">ایجاد حساب</div>
+        <h2>ثبت‌نام در GymClub</h2>
+        <p class="k-subtitle">با شماره موبایل ثبت‌نام کنید. کد تأیید پیامک می‌شود.</p>
+
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly" class="k-alert"></div>
+
+            <div class="mb-4">
+                <label asp-for="PhoneNumber" class="k-form-label">شماره موبایل</label>
+                <input asp-for="PhoneNumber" class="k-input" placeholder="09121234567" dir="ltr" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="DisplayUserName" class="k-form-label">نام نمایشی</label>
+                <input asp-for="DisplayUserName" class="k-input" placeholder="مثلاً: علی" />
+                <span asp-validation-for="DisplayUserName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-6">
+                <label asp-for="Password" class="k-form-label">رمز عبور</label>
+                <input asp-for="Password" type="password" class="k-input" placeholder="حداقل ۶ کاراکتر" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="k-btn k-btn-primary k-btn-md w-100">ثبت‌نام</button>
+
+            <div class="mt-6 text-center text-[13px] text-midgray">
+                قبلاً ثبت‌نام کرده‌اید؟
+                <a asp-action="Login" class="k-link">ورود</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

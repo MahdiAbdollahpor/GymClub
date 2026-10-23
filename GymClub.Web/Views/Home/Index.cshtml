@@ -1,8 +1,98 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "خانه";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Hero -->
+<section class="k-hero" style="background-image:url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600')">
+    <div class="k-container w-full">
+        <div class="k-hero-content">
+            <div class="k-hero-eyebrow">GYMCLUB FITNESS — POWER. PRECISION. PROGRESS.</div>
+            <h1>قدرت را از اینجا شروع کن.</h1>
+            <p>باشگاه بدن‌سازی حرفه‌ای با تجهیزات مدرن، مربیان متخصص و برنامه‌های تمرینی و تغذیه‌ای اختصاصی برای هر هدفی.</p>
+            <div class="flex flex-wrap gap-3">
+                <a asp-controller="Products" asp-action="Index" class="k-btn k-btn-primary k-btn-lg">
+                    مشاهده فروشگاه
+                </a>
+                <a asp-controller="Workout" asp-action="Index"
+                   class="k-btn k-btn-secondary k-btn-lg"
+                   style="color:#fff;border-color:#fff">
+                    دریافت برنامه ورزشی
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="k-container py-20">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">در یک نگاه</div>
+            <h2>باشگاه در اعداد</h2>
+        </div>
+        <span class="k-chip k-chip-crimson">2026</span>
+    </div>
+
+    <div class="k-stats-grid">
+        <div class="k-stat-item">
+            <div class="k-stat-num">800+</div>
+            <div class="k-stat-label">متر مربع فضای تمرین</div>
+        </div>
+        <div class="k-stat-item">
+            <div class="k-stat-num">15+</div>
+            <div class="k-stat-label">مربی حرفه‌ای</div>
+        </div>
+        <div class="k-stat-item">
+            <div class="k-stat-num">1,200</div>
+            <div class="k-stat-label">عضو فعال</div>
+        </div>
+        <div class="k-stat-item">
+            <div class="k-stat-num">24/7</div>
+            <div class="k-stat-label">دسترسی به باشگاه</div>
+        </div>
+    </div>
+</section>
+
+<!-- Articles placeholder -->
+<section class="k-container pb-20">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">آموزش</div>
+            <h2>آخرین مقالات</h2>
+        </div>
+        <a asp-controller="Articles" asp-action="Index" class="k-link">همه مقالات ←</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="k-card-accent">
+            <span class="k-chip k-chip-crimson mb-3">تمرین</span>
+            <h3 class="text-[18px] font-semibold mt-2 mb-2">چطور با دستگاه اسمیت تمرین کنیم؟</h3>
+            <p class="text-[14px] text-midgray leading-relaxed">
+                راهنمای کامل استفاده از دستگاه اسمیت برای تمرین سینه، سرشانه و پا.
+            </p>
+            <a asp-controller="Articles" asp-action="Index" class="k-link mt-3 inline-block">ادامه مطلب ←</a>
+        </div>
+        <div class="k-card-accent">
+            <span class="k-chip k-chip-crimson mb-3">تغذیه</span>
+            <h3 class="text-[18px] font-semibold mt-2 mb-2">پروتئین وی: چه زمانی و چقدر؟</h3>
+            <p class="text-[14px] text-midgray leading-relaxed">
+                بهترین زمان مصرف پروتئین وی برای رشد عضلات و ریکاوری پس از تمرین.
+            </p>
+            <a asp-controller="Articles" asp-action="Index" class="k-link mt-3 inline-block">ادامه مطلب ←</a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="k-container pb-20">
+    <div class="k-card-dark text-center">
+        <div class="k-label mb-3" style="color:#FF1A1A">برنامه ورزشی اختصاصی</div>
+        <h2 class="text-[26px] font-bold mb-3">برنامه تمرینی متناسب با بدن خودت می‌خوای؟</h2>
+        <p class="text-midgray text-[15px] mb-6 max-w-[600px] mx-auto">
+            پرسشنامه سلامت را پر کن، مربیان ما برنامه اختصاصی برایت طراحی می‌کنند.
+        </p>
+        <a asp-controller="Workout" asp-action="Index" class="k-btn k-btn-primary k-btn-md">
+            شروع کنیم
+        </a>
+    </div>
+</section>

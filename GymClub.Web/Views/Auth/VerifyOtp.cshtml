@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "تأیید شماره";
+}
+
+<div class="k-auth-wrapper">
+    <div class="k-auth-card">
+        <div class="k-label mb-2">تأیید هویت</div>
+        <h2>کد تأیید را وارد کنید</h2>
+        <p class="k-subtitle">
+            کد ۵ رقمی ارسال‌شده به <strong class="font-mono text-pure" dir="ltr">@ViewBag.Phone</strong> را وارد کنید.
+        </p>
+
+        <form asp-action="VerifyOtp" method="post">
+            <div asp-validation-summary="ModelOnly" class="k-alert"></div>
+            <input type="hidden" name="phoneNumber" value="@ViewBag.Phone" />
+
+            <div class="mb-6">
+                <label class="k-form-label">کد تأیید</label>
+                <input name="code" class="k-input text-center font-mono" maxlength="5" dir="ltr"
+                       style="letter-spacing:12px;font-size:22px;height:56px" />
+            </div>
+
+            <button type="submit" class="k-btn k-btn-primary k-btn-md w-100">تأیید و ورود</button>
+        </form>
+    </div>
+</div>

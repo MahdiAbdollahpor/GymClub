@@ -1,0 +1,39 @@
+﻿@model List<GymClub.Application.Articles.Dtos.ArticleCategoryDto>
+@{
+    ViewData["Title"] = "دسته‌بندی مقالات";
+}
+
+<div class="flex items-center justify-between mb-4">
+    <span class="text-[13px] text-midgray">@Model.Count دسته</span>
+    <a asp-action="Create" class="k-btn k-btn-primary k-btn-md">+ دسته جدید</a>
+</div>
+
+<div class="k-card p-0 overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3 font-semibold">عنوان</th>
+                <th class="text-right p-3 font-semibold">تعداد مقاله</th>
+                <th class="text-right p-3 font-semibold">ترتیب</th>
+                <th class="text-left p-3 font-semibold">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var c in Model)
+            {
+                <tr class="border-t border-bordergray hover:bg-warm">
+                    <td class="p-3 font-medium">@c.Title</td>
+                    <td class="p-3 font-mono">@c.ArticleCount</td>
+                    <td class="p-3 font-mono">@c.SortOrder</td>
+                    <td class="p-3 text-left">
+                        <a asp-action="Edit" asp-route-id="@c.Id" class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
+                        <form asp-action="Delete" asp-route-id="@c.Id" method="post" class="inline"
+                              onsubmit="return confirm('حذف شود؟')">
+                            <button type="submit" class="k-btn k-btn-ghost k-btn-sm" style="color:#CC0000">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

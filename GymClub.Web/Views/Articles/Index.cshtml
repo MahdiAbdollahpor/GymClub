@@ -1,0 +1,107 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Articles.Dtos.ArticleCardDto>
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "آموزش";
+    var categories = ViewBag.Categories as List<GymClub.Application.Articles.Dtos.ArticleCategoryDto> ?? new();
+    var selectedCat = ViewBag.CategoryId as Guid?;
+    var selectedType = ViewBag.Type as ArticleType?;
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">آموزش و مقالات</div>
+            <h2>مقالات آموزشی</h2>
+        </div>
+        <span class="k-count text-[24px] font-bold">@Model.TotalCount.ToString("N0")</span>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="mb-8">
+        <div class="flex flex-wrap gap-2 items-center">
+            <a asp-action="Index" class="k-chip @(selectedCat is null && selectedType is null ? "k-chip-active" : "k-chip-default")">همه</a>
+            @foreach (var c in categories)
+            {
+                <a asp-action="Index" asp-route-categoryId="@c.Id"
+                   class="k-chip @(selectedCat == c.Id ? "k-chip-active" : "k-chip-default")">
+                    @c.Title (@c.ArticleCount)
+                </a>
+            }
+            <span class="mx-2 text-gray-300">|</span>
+            <a asp-action="Index" asp-route-type="@ArticleType.Training"
+               class="k-chip @(selectedType == ArticleType.Training ? "k-chip-active" : "k-chip-crimson")">تمرین</a>
+            <a asp-action="Index" asp-route-type="@ArticleType.Nutrition"
+               class="k-chip @(selectedType == ArticleType.Nutrition ? "k-chip-active" : "k-chip-crimson")">تغذیه</a>
+            <a asp-action="Index" asp-route-type="@ArticleType.ClubIntro"
+               class="k-chip @(selectedType == ArticleType.ClubIntro ? "k-chip-active" : "k-chip-crimson")">معرفی باشگاه</a>
+        </div>
+
+        <div class="mt-4 flex gap-2">
+            <input name="search" value="@ViewBag.Search" class="k-input" style="max-width:360px"
+                   placeholder="جستجو در مقالات..." />
+            <button type="submit" class="k-btn k-btn-dark k-btn-md">جستجو</button>
+        </div>
+    </form>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="k-card text-center py-16 text-midgray">
+            مقاله‌ای یافت نشد.
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var a in Model.Items)
+            {
+                <a asp-action="Details" asp-route-slug="@a.Slug" class="k-product-card text-decoration-none">
+                    <div class="k-product-image">
+                        @if (!string.IsNullOrEmpty(a.CoverImageUrl))
+                        {
+                            <img src="@a.CoverImageUrl" alt="@a.Title" />
+                        }
+                        else
+                        {
+                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        }
+                    </div>
+                    <div class="k-product-body">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="k-chip k-chip-crimson">@(a.Type == ArticleType.Training ? "تمرین" : a.Type == ArticleType.Nutrition ? "تغذیه" : "باشگاه")</span>
+                            @if (a.HasVideo)
+                            {
+                                <span class="k-chip k-chip-neutral">ویدیو</span>
+                            }
+                        </div>
+                        <h3 class="k-product-name">@a.Title</h3>
+                        <p class="k-product-sub">@a.Summary</p>
+                        <div class="mt-auto flex items-center justify-between text-[12px] text-midgray pt-2">
+                            <span>@(a.PublishedAt?.ToString("yyyy/MM/dd"))</span>
+                            <span>@a.ViewCount بازدید</span>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="flex justify-center gap-1 mt-10">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <a asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-categoryId="@selectedCat"
+                       asp-route-type="@selectedType"
+                       asp-route-search="@ViewBag.Search"
+                       class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">
+                        @i
+                    </a>
+                }
+            </div>
+        }
+    }
+</section>
