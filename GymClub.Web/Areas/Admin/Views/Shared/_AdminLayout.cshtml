@@ -22,8 +22,8 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <style>
         .admin-sidebar {
-            width: 260px;
             background: #0A0A0A;
+            width: 260px;
         }
 
             .admin-sidebar a {
@@ -54,14 +54,41 @@
                 letter-spacing: .8px;
                 font-weight: 600;
             }
+
+        /* Mobile drawer */
+        #adminSidebar {
+            transform: translateX(100%);
+            transition: transform .2s ease;
+        }
+
+            #adminSidebar.open {
+                transform: translateX(0);
+            }
+        @@media (min-width: 768px) {
+            #adminSidebar {
+                transform: translateX(0);
+                position: static !important;
+            }
+
+            #adminOverlay {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-warm font-sans text-pure">
 
     <div class="flex min-h-screen">
+
+        <!-- Overlay (mobile) -->
+        <div id="adminOverlay"
+             class="fixed inset-0 bg-black/50 z-30 hidden md:hidden"
+             onclick="closeSidebar()"></div>
+
         <!-- Sidebar -->
-        <aside class="admin-sidebar min-h-screen flex-shrink-0 hidden md:block">
-            <div class="p-5 border-b border-offblack">
+        <aside id="adminSidebar"
+               class="admin-sidebar fixed md:static top-0 right-0 h-screen z-40 flex-shrink-0 overflow-y-auto">
+            <div class="p-5 border-b border-offblack flex items-center justify-between">
                 <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="flex items-center gap-2">
                     <span class="w-8 h-8 bg-primary flex items-center justify-center">
                         <span class="text-white font-mono font-bold">G</span>
@@ -71,12 +98,23 @@
                         <div class="text-midgray text-[11px]">پنل مدیریت</div>
                     </div>
                 </a>
+                <button onclick="closeSidebar()" class="md:hidden text-midgray hover:text-white p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
 
             <nav class="py-4">
                 <div class="sidebar-section">محتوا</div>
-                <a asp-area="Admin" asp-controller="Articles" asp-action="Index">📄 مقالات</a>
-                <a asp-area="Admin" asp-controller="ArticleCategories" asp-action="Index">🗂 دسته مقالات</a>
+                <a asp-area="Admin" asp-controller="Articles" asp-action="Index"
+                   class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Articles" ? "active" : "")">
+                    📄 مقالات
+                </a>
+                <a asp-area="Admin" asp-controller="ArticleCategories" asp-action="Index"
+                   class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "ArticleCategories" ? "active" : "")">
+                    🗂 دسته مقالات
+                </a>
 
                 <div class="sidebar-section">فروشگاه</div>
                 <a href="#" class="opacity-50 cursor-not-allowed">📦 محصولات (به‌زودی)</a>
@@ -88,17 +126,24 @@
 
         <!-- Main -->
         <div class="flex-1 min-w-0">
-            <header class="bg-white border-b border-bordergray h-14 flex items-center px-6 justify-between">
-                <h1 class="text-[16px] font-semibold">@ViewData["Title"]</h1>
+            <header class="bg-white border-b border-bordergray h-14 flex items-center px-4 md:px-6 justify-between sticky top-0 z-20">
                 <div class="flex items-center gap-3">
-                    <span class="text-[13px] text-midgray font-mono" dir="ltr">@UserManager.GetUserName(User)</span>
+                    <button onclick="openSidebar()" class="md:hidden p-1 text-darkgray hover:text-primary">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <h1 class="text-[16px] font-semibold">@ViewData["Title"]</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="hidden sm:inline text-[13px] text-midgray font-mono" dir="ltr">@UserManager.GetUserName(User)</span>
                     <form method="post" asp-area="" asp-controller="Auth" asp-action="Logout">
                         <button class="k-btn k-btn-ghost k-btn-sm">خروج</button>
                     </form>
                 </div>
             </header>
 
-            <div class="p-6">
+            <div class="p-4 md:p-6">
                 @if (TempData["Success"] != null)
                 {
                     <div class="k-alert k-alert-success mb-4">@TempData["Success"]</div>
@@ -111,6 +156,17 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function openSidebar() {
+            document.getElementById('adminSidebar').classList.add('open');
+            document.getElementById('adminOverlay').classList.remove('hidden');
+        }
+        function closeSidebar() {
+            document.getElementById('adminSidebar').classList.remove('open');
+            document.getElementById('adminOverlay').classList.add('hidden');
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

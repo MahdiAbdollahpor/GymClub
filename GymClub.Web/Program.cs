@@ -4,10 +4,19 @@ using GymClub.Infrastructure;
 using GymClub.Infrastructure.Persistence.Seed;
 using GymClub.Web.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Admin", "SuperAdmin"));
+
+    options.AddPolicy("SuperAdminOnly", policy =>
+        policy.RequireRole("SuperAdmin"));
+});
 
 builder.Services.AddControllersWithViews();
 

@@ -3,6 +3,7 @@ using GymClub.Application.Common.Settings;
 using GymClub.Domain.Entities;
 using GymClub.Infrastructure.Persistence;
 using GymClub.Infrastructure.Services;
+using GymClub.Infrastructure.Services.FileStorage;
 using GymClub.Infrastructure.Services.Sms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,24 @@ public static class DependencyInjection
         if (smsProvider.Equals("Mock", StringComparison.OrdinalIgnoreCase))
             services.AddScoped<ISmsService, MockSmsService>();
         // در آینده: else if SmsIr/Kavenegar ...
+
+
+
+        // ─── File Storage ───
+        services.Configure<FileStorageOptions>(configuration.GetSection("FileStorage"));
+        services.AddHttpClient<RemoteFileStorageService>();
+        services.AddScoped<LocalFileStorageService>();
+
+        services.AddScoped<IFileStorageService>(sp =>
+        {
+            var active = configuration["FileStorage:Active"] ?? "Local";
+            return active.Equals("Remote", StringComparison.OrdinalIgnoreCase)
+                ? sp.GetRequiredService<RemoteFileStorageService>()
+                : sp.GetRequiredService<LocalFileStorageService>();
+        });
+
+        services.AddScoped<IImageStorageService, ImageStorageService>();
+        services.AddScoped<IVideoStorageService, VideoStorageService>();
 
         return services;
     }
