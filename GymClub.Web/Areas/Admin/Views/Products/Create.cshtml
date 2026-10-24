@@ -1,0 +1,106 @@
+﻿@model GymClub.Web.Areas.Admin.Models.ProductFormViewModel
+@{
+    ViewData["Title"] = "محصول جدید";
+    var cats = ViewBag.CategoryOptions as List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> ?? new();
+}
+
+<form asp-action="Create" method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div asp-validation-summary="ModelOnly" class="k-alert lg:col-span-3"></div>
+
+    <div class="lg:col-span-2 space-y-4">
+        <div class="k-card">
+            <div class="mb-4">
+                <label asp-for="Name" class="k-form-label">نام محصول</label>
+                <input asp-for="Name" class="k-input" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="mb-4">
+                <label asp-for="Description" class="k-form-label">توضیحات</label>
+                <textarea asp-for="Description" class="k-textarea" rows="6"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="mb-4">
+                <label asp-for="Images" class="k-form-label">عکس‌ها (می‌توانید چند عکس انتخاب کنید)</label>
+                <input asp-for="Images" type="file" accept="image/*" multiple class="k-input" style="padding:8px" />
+                <div class="k-helper">حداکثر ۵ مگابایت برای هر عکس</div>
+            </div>
+        </div>
+
+        <div class="k-card">
+            <h4 class="k-label mb-3">ویژگی‌های محصول (اختیاری)</h4>
+            <div id="attributesWrapper" class="space-y-2">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-2 attribute-row">
+                    <input name="Attributes[0].Title" class="k-input md:col-span-2" placeholder="عنوان (مثلاً وزن)" />
+                    <input name="Attributes[0].Value" class="k-input md:col-span-2" placeholder="مقدار (مثلاً 2 کیلوگرم)" />
+                    <button type="button" class="k-btn k-btn-ghost k-btn-sm remove-attr" style="color:#CC0000">✕</button>
+                </div>
+            </div>
+            <button type="button" id="addAttribute" class="k-btn k-btn-ghost k-btn-sm mt-2">+ افزودن ویژگی</button>
+        </div>
+    </div>
+
+    <div class="space-y-4">
+        <div class="k-card">
+            <h4 class="k-label mb-3">تنظیمات</h4>
+            <div class="space-y-3">
+                <div>
+                    <label asp-for="CategoryId" class="k-form-label">دسته‌بندی</label>
+                    <select asp-for="CategoryId" asp-items="cats" class="k-select">
+                        <option value="">— انتخاب کنید —</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="Price" class="k-form-label">قیمت (تومان)</label>
+                    <input asp-for="Price" type="number" class="k-input" dir="ltr" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="DiscountPrice" class="k-form-label">قیمت با تخفیف (اختیاری)</label>
+                    <input asp-for="DiscountPrice" type="number" class="k-input" dir="ltr" />
+                    <span asp-validation-for="DiscountPrice" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="Stock" class="k-form-label">موجودی</label>
+                    <input asp-for="Stock" type="number" class="k-input" dir="ltr" />
+                </div>
+                <label class="k-check-label">
+                    <input asp-for="IsActive" class="k-checkbox" />
+                    <span>فعال (نمایش در سایت)</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="k-btn k-btn-primary k-btn-md flex-1">ذخیره</button>
+            <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function(){
+            let idx = 1;
+            document.getElementById('addAttribute').addEventListener('click', () => {
+                const wrapper = document.getElementById('attributesWrapper');
+                const div = document.createElement('div');
+                div.className = 'grid grid-cols-1 md:grid-cols-5 gap-2 attribute-row';
+                div.innerHTML = `
+                    <input name="Attributes[${idx}].Title" class="k-input md:col-span-2" placeholder="عنوان" />
+                    <input name="Attributes[${idx}].Value" class="k-input md:col-span-2" placeholder="مقدار" />
+                    <button type="button" class="k-btn k-btn-ghost k-btn-sm remove-attr" style="color:#CC0000">✕</button>`;
+                wrapper.appendChild(div);
+                idx++;
+                bindRemove();
+            });
+            function bindRemove(){
+                document.querySelectorAll('.remove-attr').forEach(b => {
+                    b.onclick = () => b.closest('.attribute-row').remove();
+                });
+            }
+            bindRemove();
+        })();
+    </script>
+}

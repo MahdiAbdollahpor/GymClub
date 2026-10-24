@@ -1,0 +1,107 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Products.Dtos.ProductCardDto>
+@using GymClub.Application.Products.Dtos
+@{
+    ViewData["Title"] = "فروشگاه";
+    var categories = ViewBag.Categories as List<ProductCategoryDto> ?? new();
+    var selectedCat = ViewBag.CategoryId as Guid?;
+    var selectedSort = ViewBag.Sort as string;
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">فروشگاه</div>
+            <h2>محصولات</h2>
+        </div>
+        <span class="k-count text-[24px] font-bold">@Model.TotalCount.ToString("N0")</span>
+    </div>
+
+    <form method="get" class="mb-8">
+        <div class="flex flex-wrap gap-2 items-center mb-4">
+            <a asp-action="Index" class="k-chip @(selectedCat is null ? "k-chip-active" : "k-chip-default")">همه</a>
+            @foreach (var c in categories)
+            {
+                <a asp-action="Index" asp-route-categoryId="@c.Id"
+                   class="k-chip @(selectedCat == c.Id ? "k-chip-active" : "k-chip-default")">
+                    @c.Title (@c.ProductCount)
+                </a>
+            }
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <input name="search" value="@ViewBag.Search" class="k-input" placeholder="جستجوی محصول..." />
+            <input name="minPrice" value="@ViewBag.MinPrice" type="number" class="k-input" placeholder="حداقل قیمت" dir="ltr" />
+            <input name="maxPrice" value="@ViewBag.MaxPrice" type="number" class="k-input" placeholder="حداکثر قیمت" dir="ltr" />
+            <select name="sort" class="k-select">
+                <option value="">جدیدترین</option>
+                <option value="price-asc" selected="@(selectedSort == "price-asc")">ارزان‌ترین</option>
+                <option value="price-desc" selected="@(selectedSort == "price-desc")">گران‌ترین</option>
+            </select>
+        </div>
+        <button type="submit" class="k-btn k-btn-dark k-btn-md mt-3">اعمال فیلتر</button>
+    </form>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="k-card text-center py-16 text-midgray">محصولی یافت نشد.</div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            @foreach (var p in Model.Items)
+            {
+                <a asp-action="Details" asp-route-slug="@p.Slug" class="k-product-card text-decoration-none">
+                    <div class="k-product-image">
+                        @if (!string.IsNullOrEmpty(p.MainImageUrl))
+                        {
+                            <img src="@p.MainImageUrl" alt="@p.Name" />
+                        }
+                        else
+                        {
+                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        }
+                    </div>
+                    <div class="k-product-body">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="k-chip k-chip-neutral">@p.CategoryTitle</span>
+                            @if (p.Stock <= 0)
+                            {
+                                <span class="k-chip k-chip-warning">ناموجود</span>
+                            }
+                        </div>
+                        <h3 class="k-product-name">@p.Name</h3>
+                        <div class="mt-auto pt-3 flex items-baseline gap-2">
+                            @if (p.HasDiscount)
+                            {
+                                <span class="k-product-price">@p.FinalPrice.ToString("N0") تومان</span>
+                                <span class="text-[12px] text-midgray line-through">@p.Price.ToString("N0")</span>
+                            }
+                            else
+                            {
+                                <span class="k-product-price">@p.Price.ToString("N0") تومان</span>
+                            }
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="flex justify-center gap-1 mt-10">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <a asp-action="Index" asp-route-page="@i"
+                       asp-route-categoryId="@selectedCat"
+                       asp-route-search="@ViewBag.Search"
+                       asp-route-minPrice="@ViewBag.MinPrice"
+                       asp-route-maxPrice="@ViewBag.MaxPrice"
+                       asp-route-sort="@selectedSort"
+                       class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">@i</a>
+                }
+            </div>
+        }
+    }
+</section>

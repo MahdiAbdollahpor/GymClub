@@ -1,0 +1,66 @@
+﻿@model List<GymClub.Application.Products.Dtos.ProductCategoryDto>
+@{
+    ViewData["Title"] = "دسته‌بندی محصولات";
+}
+
+<div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <span class="text-[13px] text-midgray">@Model.Count دسته‌بندی</span>
+    <a asp-action="Create" class="k-btn k-btn-primary k-btn-md">+ دسته جدید</a>
+</div>
+
+<div class="k-card p-0 overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3 font-semibold">عنوان</th>
+                <th class="text-right p-3 font-semibold">والد</th>
+                <th class="text-right p-3 font-semibold">تعداد محصول</th>
+                <th class="text-right p-3 font-semibold">ترتیب</th>
+                <th class="text-right p-3 font-semibold">وضعیت</th>
+                <th class="text-left p-3 font-semibold">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6" class="p-6 text-center text-midgray">هیچ دسته‌ای ثبت نشده است.</td>
+                </tr>
+            }
+            @foreach (var c in Model)
+            {
+                var parentTitle = c.ParentId.HasValue
+                ? Model.FirstOrDefault(x => x.Id == c.ParentId.Value)?.Title ?? "—"
+                : "—";
+                <tr class="border-t border-bordergray hover:bg-warm">
+                    <td class="p-3 font-medium">@c.Title</td>
+                    <td class="p-3 text-midgray">@parentTitle</td>
+                    <td class="p-3 font-mono">@c.ProductCount</td>
+                    <td class="p-3 font-mono">@c.SortOrder</td>
+                    <td class="p-3">
+                        @if (c.IsActive)
+                        {
+                            <span class="k-chip k-chip-success">فعال</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-neutral">غیرفعال</span>
+                        }
+                    </td>
+                    <td class="p-3 text-left whitespace-nowrap">
+                        <a asp-action="Edit" asp-route-id="@c.Id"
+                           class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
+                        <form asp-action="Delete" asp-route-id="@c.Id" method="post"
+                              class="inline" onsubmit="return confirm('حذف شود؟')">
+                            <button type="submit" class="k-btn k-btn-ghost k-btn-sm"
+                                    style="color:#CC0000">
+                                حذف
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

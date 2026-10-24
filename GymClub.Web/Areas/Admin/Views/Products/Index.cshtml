@@ -1,0 +1,99 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Products.Dtos.ProductCardDto>
+@using GymClub.Application.Products.Dtos
+@{
+    ViewData["Title"] = "مدیریت محصولات";
+    var cats = ViewBag.Categories as List<ProductCategoryDto> ?? new();
+}
+
+<div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <form method="get" class="flex gap-2 flex-wrap">
+        <input name="search" value="@ViewBag.Search" class="k-input" style="width:240px" placeholder="جستجو..." />
+        <select name="categoryId" class="k-select" style="width:180px">
+            <option value="">همه دسته‌ها</option>
+            @foreach (var c in cats)
+            {
+                <option value="@c.Id" selected="@(ViewBag.CategoryId as Guid? == c.Id)">@c.Title</option>
+            }
+        </select>
+        <button class="k-btn k-btn-dark k-btn-md">فیلتر</button>
+    </form>
+    <div class="flex gap-2">
+        <a asp-controller="ProductCategories" asp-action="Index" class="k-btn k-btn-ghost k-btn-md">دسته‌ها</a>
+        <a asp-action="Create" class="k-btn k-btn-primary k-btn-md">+ محصول جدید</a>
+    </div>
+</div>
+
+<div class="k-card p-0 overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3 font-semibold">محصول</th>
+                <th class="text-right p-3 font-semibold">دسته</th>
+                <th class="text-right p-3 font-semibold">قیمت</th>
+                <th class="text-right p-3 font-semibold">موجودی</th>
+                <th class="text-left p-3 font-semibold">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var p in Model.Items)
+            {
+                <tr class="border-t border-bordergray hover:bg-warm">
+                    <td class="p-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-lightgray rounded overflow-hidden flex-shrink-0">
+                                @if (!string.IsNullOrEmpty(p.MainImageUrl))
+                                {
+                                    <img src="@p.MainImageUrl" class="w-full h-full object-cover" />
+                                }
+                            </div>
+                            <span class="font-medium">@p.Name</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-midgray">@p.CategoryTitle</td>
+                    <td class="p-3 font-mono text-[13px]">
+                        @if (p.HasDiscount)
+                        {
+                            <div class="text-primary font-bold">@p.FinalPrice.ToString("N0")</div>
+                            <div class="text-midgray line-through text-[11px]">@p.Price.ToString("N0")</div>
+                        }
+                        else
+                        {
+
+                            @p.Price.ToString("N0")
+                        }
+                    </td>
+                    <td class="p-3">
+                        @if (p.Stock > 0)
+                        {
+                            <span class="k-chip k-chip-success">@p.Stock</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-warning">ناموجود</span>
+                        }
+                    </td>
+                    <td class="p-3 text-left whitespace-nowrap">
+                        <a asp-action="Edit" asp-route-id="@p.Id" class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
+                        <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="inline"
+                              onsubmit="return confirm('حذف شود؟')">
+                            <button type="submit" class="k-btn k-btn-ghost k-btn-sm" style="color:#CC0000">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="flex justify-center gap-1 mt-6">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a asp-action="Index" asp-route-page="@i"
+               asp-route-search="@ViewBag.Search" asp-route-categoryId="@ViewBag.CategoryId"
+               class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">@i</a>
+        }
+    </div>
+}

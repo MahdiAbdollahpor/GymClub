@@ -1,0 +1,184 @@
+﻿@model GymClub.Web.Areas.Admin.Models.ProductFormViewModel
+@using GymClub.Application.Products.Dtos
+@{
+    ViewData["Title"] = "ویرایش محصول";
+    var cats = ViewBag.CategoryOptions as List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> ?? new();
+    var existing = Model.ExistingImages ?? new List<ProductImageDto>();
+}
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data"
+      class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="k-alert lg:col-span-3"></div>
+
+    <div class="lg:col-span-2 space-y-4">
+
+        <!-- اطلاعات پایه -->
+        <div class="k-card">
+            <div class="mb-4">
+                <label asp-for="Name" class="k-form-label">نام محصول</label>
+                <input asp-for="Name" class="k-input" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="Description" class="k-form-label">توضیحات</label>
+                <textarea asp-for="Description" class="k-textarea" rows="6"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- عکس‌های فعلی -->
+        @if (existing.Any())
+        {
+            <div class="k-card">
+                <h4 class="k-label mb-3">عکس‌های فعلی</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    @foreach (var img in existing)
+                    {
+                        <div class="border border-bordergray rounded overflow-hidden">
+                            <img src="@img.Url" alt="" class="w-full aspect-square object-cover bg-lightgray" />
+                            <div class="p-2 space-y-2 text-[12px]">
+                                <label class="k-check-label">
+                                    <input type="checkbox" name="RemoveImageIds" value="@img.Id" class="k-checkbox" />
+                                    <span>حذف این عکس</span>
+                                </label>
+                                <label class="k-check-label">
+                                    <input type="radio" name="SetMainImageId" value="@img.Id"
+                                           class="k-radio" @(img.IsMain ? "checked" : "") />
+                                    <span>عکس اصلی</span>
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="k-helper mt-2">برای تعیین عکس اصلی، رادیو مربوطه را انتخاب کنید. سپس ذخیره بزنید.</div>
+            </div>
+        }
+
+        <!-- آپلود عکس‌های جدید -->
+        <div class="k-card">
+            <h4 class="k-label mb-3">افزودن عکس جدید</h4>
+            <input asp-for="NewImages" type="file" accept="image/*" multiple
+                   class="k-input" style="padding:8px" />
+            <div class="k-helper">می‌توانید چند عکس انتخاب کنید — حداکثر ۵ مگابایت برای هر عکس</div>
+            <span asp-validation-for="NewImages" class="text-danger"></span>
+        </div>
+
+        <!-- ویژگی‌ها -->
+        <div class="k-card">
+            <h4 class="k-label mb-3">ویژگی‌های محصول</h4>
+            <div id="attributesWrapper" class="space-y-2">
+                @if (Model.Attributes?.Any() == true)
+                {
+                    var i = 0;
+                    foreach (var a in Model.Attributes)
+                    {
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-2 attribute-row">
+                            <input name="Attributes[@i].Title" value="@a.Title"
+                                   class="k-input md:col-span-2" placeholder="عنوان (مثلاً وزن)" />
+                            <input name="Attributes[@i].Value" value="@a.Value"
+                                   class="k-input md:col-span-2" placeholder="مقدار (مثلاً 2 کیلوگرم)" />
+                            <button type="button" class="k-btn k-btn-ghost k-btn-sm remove-attr"
+                                    style="color:#CC0000">
+                                ✕
+                            </button>
+                        </div>
+                        i++;
+                    }
+                }
+                else
+                {
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-2 attribute-row">
+                        <input name="Attributes[0].Title" class="k-input md:col-span-2" placeholder="عنوان (مثلاً وزن)" />
+                        <input name="Attributes[0].Value" class="k-input md:col-span-2" placeholder="مقدار (مثلاً 2 کیلوگرم)" />
+                        <button type="button" class="k-btn k-btn-ghost k-btn-sm remove-attr"
+                                style="color:#CC0000">
+                            ✕
+                        </button>
+                    </div>
+                }
+            </div>
+            <button type="button" id="addAttribute"
+                    class="k-btn k-btn-ghost k-btn-sm mt-2">
+                + افزودن ویژگی
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ستون کناری -->
+    <div class="space-y-4">
+        <div class="k-card">
+            <h4 class="k-label mb-3">تنظیمات</h4>
+            <div class="space-y-3">
+                <div>
+                    <label asp-for="CategoryId" class="k-form-label">دسته‌بندی</label>
+                    <select asp-for="CategoryId" asp-items="cats" class="k-select">
+                        <option value="">— انتخاب کنید —</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="Price" class="k-form-label">قیمت (تومان)</label>
+                    <input asp-for="Price" type="number" class="k-input" dir="ltr" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="DiscountPrice" class="k-form-label">قیمت با تخفیف (اختیاری)</label>
+                    <input asp-for="DiscountPrice" type="number" class="k-input" dir="ltr" />
+                    <span asp-validation-for="DiscountPrice" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="Stock" class="k-form-label">موجودی</label>
+                    <input asp-for="Stock" type="number" class="k-input" dir="ltr" />
+                    <span asp-validation-for="Stock" class="text-danger"></span>
+                </div>
+                <label class="k-check-label">
+                    <input asp-for="IsActive" class="k-checkbox" />
+                    <span>فعال (نمایش در سایت)</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="k-btn k-btn-primary k-btn-md flex-1">ذخیره تغییرات</button>
+            <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            let idx = @((Model.Attributes?.Count ?? 0) > 0 ? Model.Attributes!.Count : 1);
+
+            function bindRemove() {
+                document.querySelectorAll('.remove-attr').forEach(b => {
+                    b.onclick = () => {
+                        const rows = document.querySelectorAll('.attribute-row');
+                        if (rows.length > 1) b.closest('.attribute-row').remove();
+                        else {
+                            b.closest('.attribute-row').querySelectorAll('input').forEach(i => i.value = '');
+                        }
+                    };
+                });
+            }
+
+            document.getElementById('addAttribute').addEventListener('click', () => {
+                const wrapper = document.getElementById('attributesWrapper');
+                const div = document.createElement('div');
+                div.className = 'grid grid-cols-1 md:grid-cols-5 gap-2 attribute-row';
+                div.innerHTML =
+                    `<input name="Attributes[${idx}].Title" class="k-input md:col-span-2" placeholder="عنوان" />
+                     <input name="Attributes[${idx}].Value" class="k-input md:col-span-2" placeholder="مقدار" />
+                     <button type="button" class="k-btn k-btn-ghost k-btn-sm remove-attr" style="color:#CC0000">✕</button>`;
+                wrapper.appendChild(div);
+                idx++;
+                bindRemove();
+            });
+
+            bindRemove();
+        })();
+    </script>
+}

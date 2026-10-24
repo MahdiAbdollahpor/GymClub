@@ -1,0 +1,52 @@
+﻿@model GymClub.Application.ProductCategories.Commands.Update.UpdateProductCategoryCommand
+@using GymClub.Application.Products.Dtos
+@{
+    ViewData["Title"] = "ویرایش دسته";
+    var categories = ViewBag.Categories as List<ProductCategoryDto> ?? new();
+}
+
+<div class="k-card max-w-[640px]">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="ModelOnly" class="k-alert mb-4"></div>
+
+        <div class="mb-4">
+            <label asp-for="Title" class="k-form-label">عنوان دسته</label>
+            <input asp-for="Title" class="k-input" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="ParentId" class="k-form-label">دسته والد</label>
+            <select asp-for="ParentId" class="k-select">
+                <option value="">— بدون والد (سطح اصلی) —</option>
+                @foreach (var c in categories)
+                {
+                    if (c.Id == Model.Id) { continue; }
+                    <option value="@c.Id">@c.Title</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="SortOrder" class="k-form-label">ترتیب نمایش</label>
+            <input asp-for="SortOrder" type="number" class="k-input" dir="ltr" />
+        </div>
+
+        <div class="mb-6">
+            <label class="k-check-label">
+                <input asp-for="IsActive" class="k-checkbox" />
+                <span>فعال (نمایش در سایت)</span>
+            </label>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="k-btn k-btn-primary k-btn-md">ذخیره تغییرات</button>
+            <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

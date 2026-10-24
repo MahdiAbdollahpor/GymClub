@@ -1,0 +1,117 @@
+﻿@model GymClub.Application.Products.Dtos.ProductDetailsDto
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<section class="k-container py-12">
+    <nav class="flex items-center gap-2 text-[13px] text-midgray mb-6">
+        <a asp-controller="Home" asp-action="Index" class="hover:text-primary">خانه</a>
+        <span>/</span>
+        <a asp-action="Index" class="hover:text-primary">فروشگاه</a>
+        <span>/</span>
+        <span>@Model.Name</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <!-- Gallery -->
+        <div>
+            @{
+                var main = Model.Images.FirstOrDefault(i => i.IsMain) ?? Model.Images.FirstOrDefault();
+            }
+            <div class="border border-bordergray rounded-lg overflow-hidden bg-lightgray aspect-square flex items-center justify-center">
+                @if (main != null)
+                {
+                    <img id="mainImage" src="@main.Url" alt="@Model.Name" class="w-full h-full object-cover" />
+                }
+                else
+                {
+                    <span class="text-midgray">بدون عکس</span>
+                }
+            </div>
+            @if (Model.Images.Count > 1)
+            {
+                <div class="grid grid-cols-5 gap-2 mt-3">
+                    @foreach (var img in Model.Images)
+                    {
+                        <button type="button" onclick="setMain('@img.Url')"
+                                class="border border-bordergray rounded overflow-hidden aspect-square bg-lightgray">
+                            <img src="@img.Url" class="w-full h-full object-cover" alt="" />
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Info -->
+        <div>
+            <div class="k-chip k-chip-crimson mb-3">@Model.CategoryTitle</div>
+            <h1 class="text-[28px] font-bold leading-tight mb-3">@Model.Name</h1>
+
+            <div class="flex items-baseline gap-3 mb-6">
+                @if (Model.HasDiscount)
+                {
+                    <span class="text-[28px] font-bold text-primary font-mono">@Model.FinalPrice.ToString("N0")</span>
+                    <span class="text-[13px] text-midgray">تومان</span>
+                    <span class="text-[14px] text-midgray line-through">@Model.Price.ToString("N0")</span>
+                    <span class="k-chip k-chip-crimson">@(((Model.Price - Model.FinalPrice) / Model.Price * 100).ToString("N0"))% تخفیف</span>
+                }
+                else
+                {
+                    <span class="text-[28px] font-bold text-primary font-mono">@Model.Price.ToString("N0")</span>
+                    <span class="text-[13px] text-midgray">تومان</span>
+                }
+            </div>
+
+            @if (Model.Stock > 0)
+            {
+                <div class="mb-6">
+                    <span class="k-chip k-chip-success">موجود در انبار (@Model.Stock عدد)</span>
+                </div>
+            }
+            else
+            {
+                <div class="mb-6"><span class="k-chip k-chip-warning">ناموجود</span></div>
+            }
+
+            <form asp-controller="Cart" asp-action="Add" method="post" class="mb-8">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <div class="flex items-center gap-3 mb-3">
+                    <label class="k-form-label mb-0">تعداد:</label>
+                    <input name="quantity" type="number" value="1" min="1" max="@Model.Stock"
+                           class="k-input" style="width:100px" dir="ltr" />
+                </div>
+                <button type="submit" class="k-btn k-btn-primary k-btn-lg w-100"
+                        @(Model.Stock <= 0 ? "disabled" : "")>
+                    افزودن به سبد خرید
+                </button>
+            </form>
+
+            <div class="k-card">
+                <h3 class="text-[16px] font-semibold mb-3">توضیحات</h3>
+                <p class="text-[14px] text-darkgray leading-relaxed whitespace-pre-line">@Model.Description</p>
+            </div>
+
+            @if (Model.Attributes.Any())
+            {
+                <div class="k-card mt-4">
+                    <h3 class="text-[16px] font-semibold mb-3">مشخصات</h3>
+                    <table class="w-full text-[14px]">
+                        @foreach (var a in Model.Attributes)
+                        {
+                            <tr class="border-b border-bordergray last:border-0">
+                                <td class="py-2 text-midgray w-[40%]">@a.Title</td>
+                                <td class="py-2 font-medium">@a.Value</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function setMain(url) { document.getElementById('mainImage').src = url; }
+    </script>
+}
