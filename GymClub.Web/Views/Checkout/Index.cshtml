@@ -1,0 +1,143 @@
+﻿@using GymClub.Application.Cart.Dtos
+@using GymClub.Application.Users.Dtos
+@{
+    ViewData["Title"] = "تسویه حساب";
+    var cart = ViewBag.Cart as CartDto ?? new();
+    var addresses = ViewBag.Addresses as List<AddressDto> ?? new();
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div><div class="k-label mb-2">تسویه</div><h2>تسویه حساب</h2></div>
+    </div>
+
+    <form id="checkoutForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        @Html.AntiForgeryToken()
+        <div class="lg:col-span-2 space-y-4">
+            <div class="k-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-[16px] font-semibold">آدرس تحویل</h3>
+                    <a asp-controller="Account" asp-action="Addresses" target="_blank"
+                       class="k-link text-[13px]">مدیریت آدرس‌ها ↗</a>
+                </div>
+                @if (!addresses.Any())
+                {
+                    <div class="k-alert">هنوز آدرسی ثبت نکرده‌اید. ابتدا از پنل کاربری آدرس اضافه کنید.</div>
+                }
+                else
+                {
+                    foreach (var a in addresses)
+                    {
+                        <label class="flex gap-3 p-3 border border-bordergray rounded mb-2 cursor-pointer has-[:checked]:border-primary">
+                            <input type="radio" name="AddressId" value="@a.Id" class="k-radio" required />
+                            <div class="text-[14px]">
+                                <div class="font-medium">@a.Title — @a.ReceiverName</div>
+                                <div class="text-midgray text-[13px] mt-1">@a.Province، @a.City، @a.FullAddress</div>
+                                <div class="text-midgray text-[12px] mt-1 font-mono" dir="ltr">@a.ReceiverPhone</div>
+                            </div>
+                        </label>
+                    }
+                }
+            </div>
+
+            <div class="k-card">
+                <h3 class="text-[16px] font-semibold mb-3">کد تخفیف</h3>
+                <div class="flex gap-2">
+                    <input id="discountInput" class="k-input" dir="ltr" placeholder="کد تخفیف" />
+                    <button type="button" id="applyDiscount" class="k-btn k-btn-dark k-btn-md">اعمال</button>
+                </div>
+                <div id="discountMsg" class="mt-2 text-[13px]"></div>
+            </div>
+
+            <div class="k-card">
+                <h3 class="text-[16px] font-semibold mb-3">آیتم‌ها (@cart.TotalItems)</h3>
+                @foreach (var i in cart.Items)
+                {
+                    <div class="flex justify-between py-2 border-b border-bordergray last:border-0 text-[14px]">
+                        <span>@i.ProductName × @i.Quantity</span>
+                        <span class="font-mono">@i.LineTotal.ToString("N0")</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="k-card h-fit sticky top-20">
+            <h3 class="text-[16px] font-semibold mb-4">خلاصه</h3>
+            <div class="flex justify-between text-[14px] mb-2">
+                <span class="text-midgray">جمع جزء</span>
+                <span class="font-mono" id="subtotal">@cart.SubTotal.ToString("N0")</span>
+            </div>
+            <div class="flex justify-between text-[14px] mb-2" id="discountRow" style="display:none">
+                <span class="text-midgray">تخفیف</span>
+                <span class="font-mono text-primary" id="discountValue">0</span>
+            </div>
+            <div class="border-t border-bordergray pt-3 mt-3 flex justify-between font-bold text-[16px]">
+                <span>قابل پرداخت</span>
+                <span class="text-primary font-mono" id="total">@cart.SubTotal.ToString("N0")</span>
+            </div>
+            <input type="hidden" id="discountCode" />
+            <input type="hidden" id="discountAmount" value="0" />
+            <button type="submit" id="payBtn" class="k-btn k-btn-primary k-btn-lg w-100 mt-4"
+                    @(addresses.Any() ? "" : "disabled")>
+                پرداخت آنلاین
+            </button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <script>
+        let subtotal = @cart.SubTotal;
+        let discount = 0;
+
+        async function post(url, data) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                body: new URLSearchParams(data)
+            });
+            return resp.json();
+        }
+
+        document.getElementById('applyDiscount').onclick = async () => {
+            const code = document.getElementById('discountInput').value.trim();
+            if (!code) return;
+            const r = await post('/checkout/validate-discount', { code, subTotal: subtotal });
+            const msg = document.getElementById('discountMsg');
+            if (r.success) {
+                discount = r.amount;
+                document.getElementById('discountCode').value = code;
+                document.getElementById('discountAmount').value = discount;
+                document.getElementById('discountRow').style.display = 'flex';
+                document.getElementById('discountValue').textContent = discount.toLocaleString() + ' -';
+                msg.textContent = r.description;
+                msg.style.color = '#16A34A';
+            } else {
+                discount = 0;
+                document.getElementById('discountRow').style.display = 'none';
+                msg.textContent = r.message;
+                msg.style.color = '#CC0000';
+            }
+            const total = Math.max(0, subtotal - discount);
+            document.getElementById('total').textContent = total.toLocaleString();
+        };
+
+        document.getElementById('checkoutForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('payBtn');
+            btn.disabled = true; btn.textContent = 'در حال انتقال...';
+
+            const addressId = document.querySelector('input[name="AddressId"]:checked')?.value;
+            if (!addressId) { alert('آدرس را انتخاب کنید'); btn.disabled = false; btn.textContent = 'پرداخت آنلاین'; return; }
+
+            const r = await post('/checkout/place-order', {
+                addressId,
+                discountCode: document.getElementById('discountCode').value,
+                shippingCost: 0
+            });
+            if (r.success) window.location.href = r.paymentUrl;
+            else { alert(r.message); btn.disabled = false; btn.textContent = 'پرداخت آنلاین'; }
+        };
+    </script>
+}

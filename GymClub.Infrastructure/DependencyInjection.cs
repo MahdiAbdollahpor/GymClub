@@ -4,6 +4,7 @@ using GymClub.Domain.Entities;
 using GymClub.Infrastructure.Persistence;
 using GymClub.Infrastructure.Services;
 using GymClub.Infrastructure.Services.FileStorage;
+using GymClub.Infrastructure.Services.Payments;
 using GymClub.Infrastructure.Services.Sms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -54,8 +55,8 @@ public static class DependencyInjection
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 
 
-
-        // داخل متد AddInfrastructure، قبل از return:
+        services.Configure<ZarinPalSettings>(configuration.GetSection("ZarinPal"));
+        services.AddHttpClient<IPaymentGateway, ZarinPalPaymentGateway>();
 
         services.Configure<OtpSettings>(configuration.GetSection("OtpSettings"));
 

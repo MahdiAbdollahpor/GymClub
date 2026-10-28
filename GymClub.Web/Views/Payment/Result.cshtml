@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "نتیجه پرداخت";
+}
+
+<section class="k-container py-20 max-w-[600px]">
+    <div class="k-card text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+             style="background: rgba(22,163,74,.08)">
+            <svg class="w-8 h-8" style="color:#16A34A" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <h2 class="text-[22px] font-bold mb-2">پرداخت با موفقیت انجام شد</h2>
+        <p class="text-midgray text-[14px] mb-6">سفارش شما در حال پردازش توسط ادمین است.</p>
+        <div class="flex gap-2 justify-center">
+            <a asp-controller="Orders" asp-action="Details" asp-route-id="@ViewBag.OrderId"
+               class="k-btn k-btn-primary k-btn-md">مشاهده سفارش</a>
+            <a asp-controller="Products" asp-action="Index" class="k-btn k-btn-ghost k-btn-md">ادامه خرید</a>
+        </div>
+    </div>
+</section>

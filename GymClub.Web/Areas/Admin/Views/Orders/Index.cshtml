@@ -1,0 +1,81 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Orders.Queries.GetAdminOrders.OrderAdminListItemDto>
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "مدیریت سفارشات";
+    string StatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.PendingPayment => "منتظر پرداخت",
+        OrderStatus.Paid => "پرداخت‌شده",
+        OrderStatus.Confirmed => "تأیید شده",
+        OrderStatus.Shipped => "ارسال شده",
+        OrderStatus.Cancelled => "لغو شده",
+        _ => "—"
+    };
+    string StatusChip(OrderStatus s) => s switch
+    {
+        OrderStatus.Paid => "k-chip-success",
+        OrderStatus.Confirmed => "k-chip-crimson",
+        OrderStatus.Shipped => "k-chip-success",
+        OrderStatus.Cancelled => "k-chip-warning",
+        _ => "k-chip-neutral"
+    };
+}
+
+<div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <form method="get" class="flex gap-2">
+        <input name="search" value="@ViewBag.Search" class="k-input" style="width:240px" placeholder="شماره، نام، تلفن..." />
+        <select name="status" class="k-select" style="width:170px">
+            <option value="">همه وضعیت</option>
+            <option value="@OrderStatus.PendingPayment" selected="@(ViewBag.Status as OrderStatus? == OrderStatus.PendingPayment)">منتظر پرداخت</option>
+            <option value="@OrderStatus.Paid" selected="@(ViewBag.Status as OrderStatus? == OrderStatus.Paid)">پرداخت‌شده</option>
+            <option value="@OrderStatus.Confirmed" selected="@(ViewBag.Status as OrderStatus? == OrderStatus.Confirmed)">تأیید شده</option>
+            <option value="@OrderStatus.Shipped" selected="@(ViewBag.Status as OrderStatus? == OrderStatus.Shipped)">ارسال شده</option>
+            <option value="@OrderStatus.Cancelled" selected="@(ViewBag.Status as OrderStatus? == OrderStatus.Cancelled)">لغو شده</option>
+        </select>
+        <button class="k-btn k-btn-dark k-btn-md">فیلتر</button>
+    </form>
+    <span class="text-[13px] text-midgray">@Model.TotalCount سفارش</span>
+</div>
+
+<div class="k-card p-0 overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3 font-semibold">شماره</th>
+                <th class="text-right p-3 font-semibold">گیرنده</th>
+                <th class="text-right p-3 font-semibold">تلفن</th>
+                <th class="text-right p-3 font-semibold">مبلغ</th>
+                <th class="text-right p-3 font-semibold">وضعیت</th>
+                <th class="text-right p-3 font-semibold">تاریخ</th>
+                <th class="text-left p-3 font-semibold">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var o in Model.Items)
+            {
+                <tr class="border-t border-bordergray hover:bg-warm">
+                    <td class="p-3 font-mono font-medium">@o.OrderNumber</td>
+                    <td class="p-3">@o.ReceiverName</td>
+                    <td class="p-3 font-mono text-[13px]" dir="ltr">@o.UserPhone</td>
+                    <td class="p-3 font-mono">@o.Total.ToString("N0")</td>
+                    <td class="p-3"><span class="k-chip @StatusChip(o.Status)">@StatusLabel(o.Status)</span></td>
+                    <td class="p-3 font-mono text-[13px] text-midgray">@o.CreatedAt.ToString("yyyy/MM/dd")</td>
+                    <td class="p-3 text-left">
+                        <a asp-action="Details" asp-route-id="@o.Id" class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="flex justify-center gap-1 mt-6">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.Search" asp-route-status="@ViewBag.Status"
+               class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">@i</a>
+        }
+    </div>
+}

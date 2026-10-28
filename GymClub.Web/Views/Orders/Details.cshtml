@@ -1,0 +1,119 @@
+﻿@model GymClub.Application.Orders.Queries.GetOrderDetails.OrderDetailsDto
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "جزئیات سفارش";
+    string StatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.PendingPayment => "منتظر پرداخت",
+        OrderStatus.Paid => "پرداخت‌شده",
+        OrderStatus.Confirmed => "تأیید شده",
+        OrderStatus.Shipped => "ارسال شده",
+        OrderStatus.Cancelled => "لغو شده",
+        _ => "—"
+    };
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">سفارش</div>
+            <h2 class="font-mono">@Model.OrderNumber</h2>
+        </div>
+        <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">بازگشت</a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-4">
+            <div class="k-card">
+                <h3 class="text-[16px] font-semibold mb-3">آیتم‌ها</h3>
+                @foreach (var i in Model.Items)
+                {
+                    <div class="flex items-center gap-3 py-3 border-b border-bordergray last:border-0">
+                        <a asp-controller="Products" asp-action="Details" asp-route-slug="@i.ProductSlug"
+                           class="w-14 h-14 bg-lightgray rounded overflow-hidden flex-shrink-0">
+                            @if (!string.IsNullOrEmpty(i.ProductImageUrl))
+                            {
+                                <img src="@i.ProductImageUrl" class="w-full h-full object-cover" />
+                            }
+                        </a>
+                        <div class="flex-1">
+                            <a asp-controller="Products" asp-action="Details" asp-route-slug="@i.ProductSlug"
+                               class="font-medium text-[14px] hover:text-primary">@i.ProductName</a>
+                            <div class="text-[12px] text-midgray font-mono mt-1">
+                                @i.Quantity × @i.UnitPrice.ToString("N0")
+                            </div>
+                        </div>
+                        <div class="text-left font-mono text-[14px]">
+                            @i.LineTotal.ToString("N0")
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="k-card">
+                <h3 class="text-[16px] font-semibold mb-3">آدرس تحویل</h3>
+                <div class="text-[14px] space-y-1">
+                    <div><span class="text-midgray">گیرنده:</span> @Model.ReceiverName</div>
+                    <div><span class="text-midgray">تلفن:</span> <span dir="ltr" class="font-mono">@Model.ReceiverPhone</span></div>
+                    <div><span class="text-midgray">آدرس:</span> @Model.Province، @Model.City، @Model.FullAddress</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="k-card">
+                <h3 class="text-[16px] font-semibold mb-3">وضعیت</h3>
+                <div class="k-chip k-chip-crimson mb-4">@StatusLabel(Model.Status)</div>
+                <table class="w-full text-[13px]">
+                    <tr class="border-b border-bordergray">
+                        <td class="py-2 text-midgray">تاریخ ثبت</td>
+                        <td class="py-2 font-mono">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                    </tr>
+                    @if (Model.PaidAt.HasValue)
+                    {
+                        <tr class="border-b border-bordergray">
+                            <td class="py-2 text-midgray">تاریخ پرداخت</td>
+                            <td class="py-2 font-mono">@Model.PaidAt.Value.ToString("yyyy/MM/dd HH:mm")</td>
+                        </tr>
+                    }
+                    @if (Model.ShippedAt.HasValue)
+                    {
+                        <tr class="border-b border-bordergray">
+                            <td class="py-2 text-midgray">تاریخ ارسال</td>
+                            <td class="py-2 font-mono">@Model.ShippedAt.Value.ToString("yyyy/MM/dd HH:mm")</td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.TrackingCode))
+                    {
+                        <tr class="border-b border-bordergray">
+                            <td class="py-2 text-midgray">کد رهگیری</td>
+                            <td class="py-2 font-mono font-bold" dir="ltr">@Model.TrackingCode</td>
+                        </tr>
+                    }
+                </table>
+                @if (!string.IsNullOrEmpty(Model.CancelReason))
+                {
+                    <div class="k-alert mt-3" style="font-size:13px">
+                        دلیل لغو: @Model.CancelReason
+                    </div>
+                }
+            </div>
+
+            <div class="k-card">
+                <h3 class="text-[16px] font-semibold mb-3">مالی</h3>
+                <div class="space-y-2 text-[14px]">
+                    <div class="flex justify-between"><span class="text-midgray">جمع جزء</span><span class="font-mono">@Model.SubTotal.ToString("N0")</span></div>
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <div class="flex justify-between"><span class="text-midgray">تخفیف</span><span class="font-mono text-primary">@Model.DiscountAmount.ToString("N0") -</span></div>
+                    }
+                    <div class="flex justify-between"><span class="text-midgray">هزینه ارسال</span><span class="font-mono">@(Model.ShippingCost > 0 ? Model.ShippingCost.ToString("N0") : "رایگان")</span></div>
+                    <div class="flex justify-between font-bold pt-2 border-t border-bordergray">
+                        <span>مبلغ نهایی</span>
+                        <span class="text-primary font-mono">@Model.Total.ToString("N0") تومان</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

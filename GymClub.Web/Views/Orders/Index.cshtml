@@ -1,0 +1,74 @@
+﻿@model List<GymClub.Application.Orders.Queries.GetUserOrders.OrderListItemDto>
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "سفارش‌های من";
+    string StatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.PendingPayment => "منتظر پرداخت",
+        OrderStatus.Paid => "پرداخت‌شده",
+        OrderStatus.Confirmed => "تأیید شده",
+        OrderStatus.Shipped => "ارسال شده",
+        OrderStatus.Cancelled => "لغو شده",
+        _ => "—"
+    };
+    string StatusChip(OrderStatus s) => s switch
+    {
+        OrderStatus.Paid => "k-chip-success",
+        OrderStatus.Confirmed => "k-chip-crimson",
+        OrderStatus.Shipped => "k-chip-success",
+        OrderStatus.Cancelled => "k-chip-warning",
+        _ => "k-chip-neutral"
+    };
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div><div class="k-label mb-2">تاریخچه</div><h2>سفارش‌های من</h2></div>
+        <span class="k-count text-[20px] font-bold">@Model.Count</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="k-card text-center py-16">
+            <p class="text-midgray mb-4">هنوز سفارشی ثبت نکرده‌اید.</p>
+            <a asp-controller="Products" asp-action="Index" class="k-btn k-btn-primary k-btn-md">مشاهده محصولات</a>
+        </div>
+    }
+    else
+    {
+        <div class="space-y-3">
+            @foreach (var o in Model)
+            {
+                <div class="k-card">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <div class="font-mono font-bold text-[15px]">@o.OrderNumber</div>
+                            <div class="text-[12px] text-midgray mt-1">@o.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
+                        </div>
+                        <div>
+                            <span class="k-chip @StatusChip(o.Status)">@StatusLabel(o.Status)</span>
+                        </div>
+                        <div class="text-[14px]">
+                            <span class="text-midgray">@o.ItemCount آیتم — </span>
+                            <span class="font-mono font-bold">@o.Total.ToString("N0") تومان</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <a asp-action="Details" asp-route-id="@o.Id" class="k-btn k-btn-ghost k-btn-sm">جزئیات</a>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(o.TrackingCode))
+                    {
+                        <div class="mt-3 pt-3 border-t border-bordergray text-[13px]">
+                            <span class="text-midgray">کد رهگیری پستی:</span>
+                            <span class="font-mono font-medium" dir="ltr">@o.TrackingCode</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(o.CancelReason))
+                    {
+                        <div class="mt-2 k-alert" style="font-size:13px">دلیل لغو: @o.CancelReason</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</section>

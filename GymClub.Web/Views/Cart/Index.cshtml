@@ -1,0 +1,117 @@
+﻿@model GymClub.Application.Cart.Dtos.CartDto
+@{
+    ViewData["Title"] = "سبد خرید";
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">سبد خرید</div>
+            <h2>سبد خرید شما</h2>
+        </div>
+        <span class="k-count text-[20px] font-bold">@Model.TotalItems آیتم</span>
+    </div>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="k-card text-center py-16">
+            <p class="text-midgray mb-4">سبد خرید شما خالی است.</p>
+            <a asp-controller="Products" asp-action="Index" class="k-btn k-btn-primary k-btn-md">مشاهده محصولات</a>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-3">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="k-card" data-item-id="@item.Id">
+                        <div class="flex items-center gap-4">
+                            <a asp-controller="Products" asp-action="Details" asp-route-slug="@item.ProductSlug"
+                               class="w-20 h-20 bg-lightgray rounded overflow-hidden flex-shrink-0">
+                                @if (!string.IsNullOrEmpty(item.ProductImageUrl))
+                                {
+                                    <img src="@item.ProductImageUrl" class="w-full h-full object-cover" />
+                                }
+                            </a>
+                            <div class="flex-1 min-w-0">
+                                <a asp-controller="Products" asp-action="Details" asp-route-slug="@item.ProductSlug"
+                                   class="font-medium text-[15px] hover:text-primary">@item.ProductName</a>
+                                <div class="text-[13px] text-midgray mt-1 font-mono">@item.UnitPrice.ToString("N0") تومان</div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="k-btn k-btn-ghost k-btn-sm cart-dec" data-id="@item.Id">−</button>
+                                <input type="number" class="k-input text-center cart-qty" value="@item.Quantity"
+                                       min="1" max="@item.StockAvailable" data-id="@item.Id"
+                                       style="width:70px" dir="ltr" />
+                                <button class="k-btn k-btn-ghost k-btn-sm cart-inc" data-id="@item.Id">+</button>
+                            </div>
+                            <div class="text-left min-w-[110px]">
+                                <div class="font-mono font-bold text-[15px]">@item.LineTotal.ToString("N0")</div>
+                                <div class="text-[11px] text-midgray">تومان</div>
+                            </div>
+                            <button class="k-btn k-btn-ghost k-btn-sm cart-remove"
+                                    data-id="@item.Id" style="color:#CC0000">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="k-card h-fit sticky top-20">
+                <h3 class="text-[16px] font-semibold mb-4">خلاصه سفارش</h3>
+                <div class="flex justify-between text-[14px] mb-2">
+                    <span class="text-midgray">جمع جزء</span>
+                    <span class="font-mono">@Model.SubTotal.ToString("N0") تومان</span>
+                </div>
+                <div class="border-t border-bordergray pt-3 mt-3 flex justify-between font-bold text-[16px]">
+                    <span>مبلغ قابل پرداخت</span>
+                    <span class="text-primary font-mono">@Model.SubTotal.ToString("N0") تومان</span>
+                </div>
+                <a asp-controller="Checkout" asp-action="Index" class="k-btn k-btn-primary k-btn-md w-100 mt-4">
+                    ادامه و تسویه
+                </a>
+            </div>
+        </div>
+    }
+</section>
+
+@section Scripts {
+    <script>
+        async function post(url, data) {
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(data)
+            });
+            return resp.json();
+        }
+        function reloadOnSuccess(r) { if (r.success) location.reload(); else alert(r.message); }
+
+        document.querySelectorAll('.cart-inc').forEach(b => b.onclick = async () => {
+            const row = b.closest('.k-card');
+            const qty = parseInt(row.querySelector('.cart-qty').value) + 1;
+            reloadOnSuccess(await post('/cart/update', { cartItemId: b.dataset.id, quantity: qty }));
+        });
+        document.querySelectorAll('.cart-dec').forEach(b => b.onclick = async () => {
+            const row = b.closest('.k-card');
+            const qty = Math.max(0, parseInt(row.querySelector('.cart-qty').value) - 1);
+            reloadOnSuccess(await post('/cart/update', { cartItemId: b.dataset.id, quantity: qty }));
+        });
+        document.querySelectorAll('.cart-qty').forEach(inp => inp.onchange = async () => {
+            const qty = parseInt(inp.value) || 1;
+            reloadOnSuccess(await post('/cart/update', { cartItemId: inp.dataset.id, quantity: qty }));
+        });
+        document.querySelectorAll('.cart-remove').forEach(b => b.onclick = async () => {
+            ConfirmModal.open({
+                title: 'حذف از سبد',
+                message: 'این آیتم از سبد خرید حذف شود؟',
+                okText: 'حذف',
+                onConfirm: async () => {
+                    reloadOnSuccess(await post('/cart/remove', { cartItemId: b.dataset.id }));
+                }
+            });
+        });
+    </script>
+}
