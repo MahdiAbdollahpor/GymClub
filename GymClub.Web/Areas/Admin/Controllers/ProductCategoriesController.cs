@@ -2,10 +2,12 @@
 using GymClub.Application.ProductCategories.Commands.Delete;
 using GymClub.Application.ProductCategories.Commands.Update;
 using GymClub.Application.ProductCategories.Queries.GetForEdit;
+using GymClub.Application.ProductCategories.Queries.GetProductCategoryDetails;
 using GymClub.Application.Products.Queries.GetProductCategories;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace GymClub.Web.Areas.Admin.Controllers;
 
@@ -75,6 +77,14 @@ public class ProductCategoriesController : Controller
         }
         TempData["Success"] = "دسته به‌روزرسانی شد";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet("details/{id:guid}")]
+    public async Task<IActionResult> Details(Guid id, CancellationToken ct)
+    {
+        var r = await _m.Send(new GetProductCategoryDetailsQuery(id), ct);
+        if (!r.Succeeded) return NotFound();
+        return View(r.Data);
     }
 
     [HttpPost("delete/{id:guid}")]

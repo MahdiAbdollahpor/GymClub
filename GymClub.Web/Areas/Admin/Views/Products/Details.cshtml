@@ -1,0 +1,141 @@
+﻿@model GymClub.Application.Products.Dtos.ProductDetailsDto
+@{
+    ViewData["Title"] = "جزئیات محصول";
+    var main = Model.Images.FirstOrDefault(i => i.IsMain) ?? Model.Images.FirstOrDefault();
+}
+
+<div class="mb-4 flex items-center justify-between flex-wrap gap-2">
+    <div>
+        <div class="k-label mb-1">جزئیات محصول</div>
+        <h2 class="text-[20px] font-bold">@Model.Name</h2>
+    </div>
+    <div class="flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="k-btn k-btn-primary k-btn-md">ویرایش</a>
+        <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">بازگشت</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- گالری -->
+    <div class="lg:col-span-1 space-y-3">
+        <div class="k-card p-0 overflow-hidden">
+            <div class="aspect-square bg-lightgray flex items-center justify-center">
+                @if (main != null)
+                {
+                    <img id="mainPreview" src="@main.Url" alt="@Model.Name"
+                         class="w-full h-full object-cover" />
+                }
+                else
+                {
+                    <span class="text-midgray">بدون عکس</span>
+                }
+            </div>
+        </div>
+
+        @if (Model.Images.Count > 1)
+        {
+            <div class="k-card">
+                <h4 class="k-label mb-2">گالری (@Model.Images.Count)</h4>
+                <div class="grid grid-cols-4 gap-2">
+                    @foreach (var img in Model.Images)
+                    {
+                        <button type="button"
+                                onclick="document.getElementById('mainPreview').src='@img.Url'"
+                                class="border border-bordergray rounded overflow-hidden aspect-square bg-lightgray hover:border-primary transition-colors">
+                            <img src="@img.Url" class="w-full h-full object-cover" alt="" />
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- اطلاعات -->
+    <div class="lg:col-span-2 space-y-4">
+        <div class="k-card">
+            <div class="flex items-center gap-2 mb-4 flex-wrap">
+                @if (Model.IsActive)
+                {
+                    <span class="k-chip k-chip-success">فعال</span>
+                }
+                else
+                {
+
+                    <span class="k-chip k-chip-neutral">غیرفعال</span>
+                }
+                @if (Model.HasDiscount)
+                {
+                    <span class="k-chip k-chip-crimson">تخفیف‌دار</span>
+                }
+                @if (Model.Stock <= 0)
+                {
+                    <span class="k-chip k-chip-warning">ناموجود</span>
+                }
+            </div>
+
+            <div class="flex items-baseline gap-3 mb-4">
+                @if (Model.HasDiscount)
+                {
+                    <span class="text-[24px] font-bold text-primary font-mono">@Model.FinalPrice.ToString("N0")</span>
+                    <span class="text-[13px] text-midgray">تومان</span>
+                    <span class="text-[14px] text-midgray line-through">@Model.Price.ToString("N0")</span>
+                    <span class="k-chip k-chip-crimson">@(((Model.Price - Model.FinalPrice) / Model.Price * 100).ToString("N0"))% تخفیف</span>
+                }
+                else
+                {
+                    <span class="text-[24px] font-bold text-primary font-mono">@Model.Price.ToString("N0")</span>
+                    <span class="text-[13px] text-midgray">تومان</span>
+                }
+            </div>
+
+            <table class="w-full text-[14px]">
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray w-[35%]">دسته‌بندی</td>
+                    <td class="py-2 font-medium">@Model.CategoryTitle</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">موجودی</td>
+                    <td class="py-2 font-mono">@Model.Stock عدد</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">تاریخ ایجاد</td>
+                    <td class="py-2 font-mono text-[13px]">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                </tr>
+                <tr>
+                    <td class="py-2 text-midgray">آخرین ویرایش</td>
+                    <td class="py-2 font-mono text-[13px]">
+                        @(Model.UpdatedAt?.ToString("yyyy/MM/dd HH:mm") ?? "—")
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="k-card">
+            <h4 class="k-label mb-3">توضیحات</h4>
+            <p class="text-[14px] text-darkgray leading-relaxed whitespace-pre-line">@Model.Description</p>
+        </div>
+
+        @if (Model.Attributes.Any())
+        {
+            <div class="k-card">
+                <h4 class="k-label mb-3">ویژگی‌ها (@Model.Attributes.Count)</h4>
+                <table class="w-full text-[14px]">
+                    @foreach (var a in Model.Attributes)
+                    {
+                        <tr class="border-b border-bordergray last:border-0">
+                            <td class="py-2 text-midgray w-[40%]">@a.Title</td>
+                            <td class="py-2 font-medium">@a.Value</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        }
+
+        <div class="k-card">
+            <h4 class="k-label mb-3">لینک عمومی</h4>
+            <div class="text-[13px] text-midgray mb-2" dir="ltr">/products/@Model.Slug</div>
+            <a href="/products/@Model.Slug" target="_blank"
+               class="k-btn k-btn-ghost k-btn-sm w-100">مشاهده در سایت ↗</a>
+        </div>
+    </div>
+</div>

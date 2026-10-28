@@ -1,0 +1,83 @@
+﻿<!-- Confirm Delete Modal (Karya style) -->
+<div id="confirmModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-black/60" onclick="ConfirmModal.cancel()"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-[420px] w-full p-6 relative"
+             style="box-shadow: 0 8px 40px rgba(0,0,0,.28)">
+            <div class="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center"
+                 style="background: rgba(204,0,0,.08)">
+                <svg class="w-7 h-7" style="color:#CC0000" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+                </svg>
+            </div>
+            <h3 id="confirmModalTitle" class="text-[18px] font-bold text-center mb-2">حذف مورد</h3>
+            <p id="confirmModalMessage" class="text-[14px] text-midgray text-center leading-relaxed mb-6">
+                آیا از حذف این مورد اطمینان دارید؟ این عمل قابل بازگشت نیست.
+            </p>
+            <div class="flex gap-2">
+                <button type="button" onclick="ConfirmModal.cancel()"
+                        class="k-btn k-btn-ghost k-btn-md flex-1">
+                    انصراف
+                </button>
+                <button type="button" id="confirmModalOk"
+                        class="k-btn k-btn-primary k-btn-md flex-1">
+                    بله، حذف کن
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.ConfirmModal = (function () {
+        let _form = null;
+        let _onConfirm = null;
+
+        function open(opts) {
+            _form = opts.form || null;
+            _onConfirm = opts.onConfirm || null;
+            document.getElementById('confirmModalTitle').textContent = opts.title || 'حذف مورد';
+            document.getElementById('confirmModalMessage').textContent =
+                opts.message || 'آیا از حذف این مورد اطمینان دارید؟ این عمل قابل بازگشت نیست.';
+            const okBtn = document.getElementById('confirmModalOk');
+            okBtn.textContent = opts.okText || 'بله، حذف کن';
+            document.getElementById('confirmModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            okBtn.focus();
+        }
+        function cancel() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            document.body.style.overflow = '';
+            _form = null; _onConfirm = null;
+        }
+        function confirm() {
+            if (_onConfirm) { const cb = _onConfirm; cancel(); cb(); return; }
+            if (_form) { const f = _form; cancel(); f.submit(); }
+            else cancel();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('confirmModalOk').addEventListener('click', confirm);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') cancel(); });
+
+            // Delegate: هر فرمی با data-confirm-delete
+            document.body.addEventListener('submit', function (e) {
+                const form = e.target;
+                if (!(form instanceof HTMLFormElement)) return;
+                if (!form.hasAttribute('data-confirm-delete')) return;
+                if (form.dataset.confirmed === '1') { form.dataset.confirmed = ''; return; }
+
+                e.preventDefault();
+                ConfirmModal.open({
+                    form: form,
+                    title: form.dataset.confirmTitle || 'حذف مورد',
+                    message: form.dataset.confirmMessage || 'آیا از حذف این مورد اطمینان دارید؟ این عمل قابل بازگشت نیست.',
+                    okText: form.dataset.confirmOk || 'بله، حذف کن'
+                });
+            });
+        });
+
+        return { open, cancel, confirm };
+    })();
+</script>

@@ -1,0 +1,121 @@
+﻿@model GymClub.Application.ProductCategories.Queries.GetProductCategoryDetails.ProductCategoryDetailsDto
+@{
+    ViewData["Title"] = "جزئیات دسته‌بندی";
+}
+
+<div class="mb-4 flex items-center justify-between flex-wrap gap-2">
+    <div>
+        <div class="k-label mb-1">جزئیات دسته‌بندی</div>
+        <h2 class="text-[20px] font-bold">@Model.Title</h2>
+    </div>
+    <div class="flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="k-btn k-btn-primary k-btn-md">ویرایش</a>
+        <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">بازگشت</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="space-y-4">
+        <div class="k-card">
+            <h4 class="k-label mb-3">اطلاعات دسته</h4>
+            <table class="w-full text-[14px]">
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray w-[40%]">وضعیت</td>
+                    <td class="py-2">
+                        @if (Model.IsActive)
+                        {
+                            <span class="k-chip k-chip-success">فعال</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-neutral">غیرفعال</span>
+                        }
+                    </td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">دسته والد</td>
+                    <td class="py-2 font-medium">@(Model.ParentTitle ?? "—")</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">ترتیب</td>
+                    <td class="py-2 font-mono">@Model.SortOrder</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">تعداد محصول</td>
+                    <td class="py-2 font-mono">@Model.Products.Count</td>
+                </tr>
+                <tr>
+                    <td class="py-2 text-midgray">تاریخ ایجاد</td>
+                    <td class="py-2 font-mono text-[13px]">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="k-card">
+            <h4 class="k-label mb-3">لینک عمومی</h4>
+            <div class="text-[13px] text-midgray mb-2" dir="ltr">/products?categoryId=@Model.Id</div>
+            <a href="/products?categoryId=@Model.Id" target="_blank"
+               class="k-btn k-btn-ghost k-btn-sm w-100">مشاهده در سایت ↗</a>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2">
+        <div class="k-card">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="k-label">محصولات این دسته (@Model.Products.Count)</h4>
+                <a asp-controller="Products" asp-action="Create"
+                   class="k-btn k-btn-ghost k-btn-sm">+ محصول جدید</a>
+            </div>
+
+            @if (!Model.Products.Any())
+            {
+                <div class="text-center text-midgray py-8 text-[14px]">
+                    هنوز محصولی به این دسته اضافه نشده است.
+                </div>
+            }
+            else
+            {
+                <div class="space-y-2">
+                    @foreach (var p in Model.Products)
+                    {
+                        <div class="flex items-center justify-between p-3 border border-bordergray rounded-lg hover:border-primary transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-lightgray rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                    @if (!string.IsNullOrEmpty(p.MainImageUrl))
+                                    {
+                                        <img src="@p.MainImageUrl" class="w-full h-full object-cover" />
+                                    }
+                                    else
+                                    {
+
+                                        <span class="text-[10px] text-midgray">—</span>
+                                    }
+                                </div>
+                                <div>
+                                    <div class="font-medium text-[14px]">@p.Name</div>
+                                    <div class="text-[12px] text-midgray font-mono">
+                                        @p.FinalPrice.ToString("N0") تومان
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                @if (p.Stock > 0)
+                                {
+                                    <span class="k-chip k-chip-success">@p.Stock</span>
+                                }
+                                else
+                                {
+
+                                    <span class="k-chip k-chip-warning">ناموجود</span>
+                                }
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@p.Id"
+                                   class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

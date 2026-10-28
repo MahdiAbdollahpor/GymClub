@@ -49,14 +49,14 @@
                         }
                     </td>
                     <td class="p-3 text-left whitespace-nowrap">
+                        <a asp-action="Details" asp-route-id="@c.Id" class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
                         <a asp-action="Edit" asp-route-id="@c.Id"
                            class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
-                        <form asp-action="Delete" asp-route-id="@c.Id" method="post"
-                              class="inline" onsubmit="return confirm('حذف شود؟')">
-                            <button type="submit" class="k-btn k-btn-ghost k-btn-sm"
-                                    style="color:#CC0000">
-                                حذف
-                            </button>
+                        <form asp-action="Delete" asp-route-id="@c.Id" method="post" class="inline"
+                              data-confirm-delete
+                              data-confirm-title="حذف دسته‌بندی"
+                              data-confirm-message="آیا از حذف دسته «@c.Title» اطمینان دارید؟ اگر محصولی به آن وابسته باشد، حذف انجام نمی‌شود.">
+                            <button type="submit" class="k-btn k-btn-ghost k-btn-sm" style="color:#CC0000">حذف</button>
                         </form>
                     </td>
                 </tr>

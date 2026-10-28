@@ -1,0 +1,154 @@
+﻿@model GymClub.Application.Articles.Dtos.ArticleDetailsDto
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "جزئیات مقاله";
+}
+
+<div class="mb-4 flex items-center justify-between flex-wrap gap-2">
+    <div>
+        <div class="k-label mb-1">جزئیات مقاله</div>
+        <h2 class="text-[20px] font-bold">@Model.Title</h2>
+    </div>
+    <div class="flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="k-btn k-btn-primary k-btn-md">ویرایش</a>
+        <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">بازگشت</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- محتوا -->
+    <div class="lg:col-span-2 space-y-4">
+        @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+        {
+            <div class="k-card p-0 overflow-hidden">
+                <img src="@Model.CoverImageUrl" alt="@Model.Title" class="w-full max-h-[380px] object-cover" />
+            </div>
+        }
+
+        <div class="k-card">
+            <h4 class="k-label mb-3">خلاصه</h4>
+            <p class="text-[14px] text-darkgray leading-relaxed">@Model.Summary</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.VideoUrl))
+        {
+            <div class="k-card">
+                <h4 class="k-label mb-3">ویدیو</h4>
+                <video src="@Model.VideoUrl" controls class="w-full rounded-lg bg-black"></video>
+            </div>
+        }
+
+        <div class="k-card">
+            <h4 class="k-label mb-3">محتوا</h4>
+            <div class="article-content">
+                @Html.Raw(Model.ContentHtml)
+            </div>
+        </div>
+    </div>
+
+    <!-- متادیتا -->
+    <div class="space-y-4">
+        <div class="k-card">
+            <h4 class="k-label mb-3">اطلاعات</h4>
+            <table class="w-full text-[14px]">
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray w-[40%]">وضعیت</td>
+                    <td class="py-2">
+                        @if (Model.PublishedAt.HasValue)
+                        {
+                            <span class="k-chip k-chip-success">منتشر شده</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-neutral">پیش‌نویس</span>
+                        }
+                    </td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">نوع</td>
+                    <td class="py-2 font-medium">
+                        @(Model.Type == ArticleType.Training ? "تمرین"
+                                                : Model.Type == ArticleType.Nutrition ? "تغذیه" : "معرفی باشگاه")
+                    </td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">دسته</td>
+                    <td class="py-2 font-medium">@(Model.CategoryTitle ?? "—")</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">نویسنده</td>
+                    <td class="py-2 font-medium">@Model.AuthorName</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">تاریخ انتشار</td>
+                    <td class="py-2 font-mono text-[13px]">
+                        @(Model.PublishedAt?.ToString("yyyy/MM/dd HH:mm") ?? "—")
+                    </td>
+                </tr>
+                <tr>
+                    <td class="py-2 text-midgray">بازدید</td>
+                    <td class="py-2 font-mono">@Model.ViewCount</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="k-card">
+            <h4 class="k-label mb-3">لینک عمومی</h4>
+            <div class="text-[13px] text-midgray mb-2" dir="ltr">/articles/@Model.Slug</div>
+            <a href="/articles/@Model.Slug" target="_blank"
+               class="k-btn k-btn-ghost k-btn-sm w-100">مشاهده در سایت ↗</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .article-content {
+            font-size: 15px;
+            line-height: 1.85;
+            color: #1A1A1A;
+        }
+
+            .article-content h2 {
+                font-size: 20px;
+                font-weight: 700;
+                margin: 24px 0 12px;
+            }
+
+            .article-content h3 {
+                font-size: 17px;
+                font-weight: 600;
+                margin: 20px 0 10px;
+            }
+
+            .article-content p {
+                margin-bottom: 12px;
+            }
+
+            .article-content img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 6px;
+                margin: 12px 0;
+            }
+
+            .article-content ul, .article-content ol {
+                padding-right: 22px;
+                margin-bottom: 12px;
+            }
+
+            .article-content a {
+                color: #CC0000;
+                text-decoration: underline;
+            }
+
+            .article-content blockquote {
+                border-right: 4px solid #CC0000;
+                padding: 8px 14px;
+                background: #F9F9F9;
+                margin: 12px 0;
+                color: #4D4D4D;
+            }
+    </style>
+}

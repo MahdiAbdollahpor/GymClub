@@ -1,8 +1,10 @@
 ﻿using GymClub.Application.ArticleCategories.Commands.Create;
 using GymClub.Application.ArticleCategories.Commands.Delete;
 using GymClub.Application.ArticleCategories.Commands.Update;
+using GymClub.Application.ArticleCategories.Queries.GetArticleCategoryDetails;
 using GymClub.Application.ArticleCategories.Queries.GetForEdit;
 using GymClub.Application.Articles.Queries.GetArticleCategories;
+using GymClub.Application.Articles.Queries.GetArticleForEdit;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -81,7 +83,18 @@ public class ArticleCategoriesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost("delete/{id:guid}")]
+
+   
+
+[HttpGet("details/{id:guid}")]
+public async Task<IActionResult> Details(Guid id, CancellationToken ct)
+{
+    var r = await _mediator.Send(new GetArticleCategoryDetailsQuery(id), ct);
+    if (!r.Succeeded) return NotFound();
+    return View(r.Data);
+}
+
+[HttpPost("delete/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var r = await _mediator.Send(new DeleteArticleCategoryCommand(id), ct);

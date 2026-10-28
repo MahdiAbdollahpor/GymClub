@@ -13,7 +13,7 @@ public record GetActiveProductsQuery(
     decimal? MaxPrice = null,
     string? Sort = null,   // "price-asc" | "price-desc" | "newest"
     int Page = 1,
-    int PageSize = 12
+    int PageSize = 8
 ) : IRequest<PagedResult<ProductCardDto>>;
 
 public class GetActiveProductsQueryHandler

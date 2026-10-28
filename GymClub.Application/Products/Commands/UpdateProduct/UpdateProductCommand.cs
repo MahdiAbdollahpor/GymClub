@@ -88,12 +88,15 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             foreach (var img in req.NewImages)
             {
                 var url = await _images.UploadAsync(img.Stream, img.FileName, img.ContentType, ct);
-                product.Images.Add(new ProductImage
+                var newImage = new ProductImage
                 {
+                    ProductId = product.Id, // اطمینان حاصل کنید که کلید خارجی مقداردهی شده است
                     Url = url,
                     SortOrder = ++maxOrder,
                     IsMain = img.IsMain
-                });
+                };
+
+                _db.ProductImages.Add(newImage);
             }
         }
 

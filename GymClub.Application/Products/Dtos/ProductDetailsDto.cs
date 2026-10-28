@@ -11,6 +11,12 @@ public class ProductDetailsDto
     public decimal Price { get; set; }
     public decimal? DiscountPrice { get; set; }
     public int Stock { get; set; }
+
+    public bool IsActive { get; set; }             
+    public DateTime CreatedAt { get; set; }         
+    public DateTime? UpdatedAt { get; set; }
+
+
     public List<ProductImageDto> Images { get; set; } = new();
     public List<ProductAttributeDto> Attributes { get; set; } = new();
     public decimal FinalPrice => DiscountPrice ?? Price;

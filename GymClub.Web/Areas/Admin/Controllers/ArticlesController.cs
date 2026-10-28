@@ -127,6 +127,15 @@ public class ArticlesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+
+    [HttpGet("details/{id:guid}")]
+    public async Task<IActionResult> Details(Guid id, CancellationToken ct)
+    {
+        var r = await _mediator.Send(new GetArticleForEditQuery(id), ct);
+        if (!r.Succeeded) return NotFound();
+        return View(r.Data);
+    }
+
     [HttpPost("delete/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {

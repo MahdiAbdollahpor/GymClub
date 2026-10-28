@@ -26,9 +26,12 @@
                     <td class="p-3 font-mono">@c.ArticleCount</td>
                     <td class="p-3 font-mono">@c.SortOrder</td>
                     <td class="p-3 text-left">
+                        <a asp-action="Details" asp-route-id="@c.Id" class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
                         <a asp-action="Edit" asp-route-id="@c.Id" class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
                         <form asp-action="Delete" asp-route-id="@c.Id" method="post" class="inline"
-                              onsubmit="return confirm('حذف شود؟')">
+                              data-confirm-delete
+                              data-confirm-title="حذف مقاله"
+                              data-confirm-message="آیا از حذف این مقاله اطمینان دارید؟ این عمل قابل بازگشت نیست.">
                             <button type="submit" class="k-btn k-btn-ghost k-btn-sm" style="color:#CC0000">حذف</button>
                         </form>
                     </td>

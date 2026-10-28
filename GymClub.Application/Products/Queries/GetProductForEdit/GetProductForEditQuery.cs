@@ -37,6 +37,9 @@ public class GetProductForEditQueryHandler
             CategoryId = p.CategoryId,
             CategoryTitle = p.Category.Title,
             Price = p.Price,
+            IsActive = p.IsActive,
+            CreatedAt = p.CreatedAt,
+            UpdatedAt = p.UpdatedAt,
             DiscountPrice = p.DiscountPrice,
             Stock = p.Stock,
             Images = p.Images.OrderBy(i => i.SortOrder).Select(i => new ProductImageDto

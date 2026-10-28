@@ -74,9 +74,12 @@
                         }
                     </td>
                     <td class="p-3 text-left whitespace-nowrap">
+                        <a asp-action="Details" asp-route-id="@p.Id" class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
                         <a asp-action="Edit" asp-route-id="@p.Id" class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
                         <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="inline"
-                              onsubmit="return confirm('حذف شود؟')">
+                              data-confirm-delete
+                              data-confirm-title="حذف محصول"
+                              data-confirm-message="آیا از حذف محصول «@p.Name» اطمینان دارید؟ عکس‌های محصول نیز حذف خواهند شد.">
                             <button type="submit" class="k-btn k-btn-ghost k-btn-sm" style="color:#CC0000">حذف</button>
                         </form>
                     </td>

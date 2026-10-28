@@ -49,9 +49,12 @@
                     <td class="p-3 font-mono text-[13px]">@a.ViewCount</td>
                     <td class="p-3 text-midgray font-mono text-[13px]">@a.PublishedAt?.ToString("yyyy/MM/dd")</td>
                     <td class="p-3 text-left">
+                        <a asp-action="Details" asp-route-id="@a.Id" class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
                         <a asp-action="Edit" asp-route-id="@a.Id" class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
                         <form asp-action="Delete" asp-route-id="@a.Id" method="post" class="inline"
-                              onsubmit="return confirm('حذف شود؟')">
+                              data-confirm-delete
+                              data-confirm-title="حذف دسته"
+                              data-confirm-message="آیا از حذف دسته «@a.Title» اطمینان دارید؟ فقط اگر مقاله‌ای به آن وابسته نباشد حذف می‌شود.">
                             <button type="submit" class="k-btn k-btn-ghost k-btn-sm" style="color:#CC0000">حذف</button>
                         </form>
                     </td>
