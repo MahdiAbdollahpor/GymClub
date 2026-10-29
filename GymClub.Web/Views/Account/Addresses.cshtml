@@ -1,0 +1,74 @@
+﻿@model List<GymClub.Application.Users.Dtos.AddressDto>
+@{
+    ViewData["Title"] = "آدرس‌ها";
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div><div class="k-label mb-2">حساب کاربری</div><h2>آدرس‌های من</h2></div>
+        <a asp-action="CreateAddress" class="k-btn k-btn-primary k-btn-md">+ آدرس جدید</a>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+        <partial name="_AccountNav" />
+
+        <div class="flex-1 min-w-0 space-y-3">
+            @if (TempData["Success"] != null)
+            {
+                <div class="k-alert k-alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="k-alert">@TempData["Error"]</div>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="k-card text-center py-12">
+                    <p class="text-midgray mb-4">هنوز آدرسی ثبت نکرده‌اید.</p>
+                    <a asp-action="CreateAddress" class="k-btn k-btn-primary k-btn-md">افزودن اولین آدرس</a>
+                </div>
+            }
+            else
+            {
+                foreach (var a in Model)
+                {
+                    <div class="k-card @(a.IsDefault ? "border-primary" : "")">
+                        <div class="flex items-start justify-between gap-4 flex-wrap">
+                            <div class="flex-1 min-w-[200px]">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="font-semibold text-[15px]">@a.Title</span>
+                                    @if (a.IsDefault)
+                                    {
+                                        <span class="k-chip k-chip-crimson">پیش‌فرض</span>
+                                    }
+                                </div>
+                                <div class="text-[13px] text-darkgray leading-relaxed space-y-1">
+                                    <div>@a.ReceiverName — <span class="font-mono" dir="ltr">@a.ReceiverPhone</span></div>
+                                    <div>@a.Province، @a.City@(string.IsNullOrEmpty(a.PostalCode) ? "" : $"، کد پستی {a.PostalCode}")</div>
+                                    <div>@a.FullAddress</div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-2 min-w-[140px]">
+                                <a asp-action="EditAddress" asp-route-id="@a.Id"
+                                   class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
+                                @if (!a.IsDefault)
+                                {
+                                    <form asp-action="SetDefaultAddress" asp-route-id="@a.Id" method="post">
+                                        <button type="submit" class="k-btn k-btn-ghost k-btn-sm w-100">پیش‌فرض کن</button>
+                                    </form>
+                                }
+                                <form asp-action="DeleteAddress" asp-route-id="@a.Id" method="post"
+                                      data-confirm-delete data-confirm-title="حذف آدرس"
+                                      data-confirm-message="آیا از حذف آدرس «@a.Title» اطمینان دارید؟">
+                                    <button type="submit" class="k-btn k-btn-ghost k-btn-sm w-100" style="color:#CC0000">حذف</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

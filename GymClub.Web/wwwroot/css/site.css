@@ -645,6 +645,21 @@ body {
         margin-top: auto;
     }
 
+.k-product-card {
+    position: relative;
+}
+
+#cartBadge {
+    background: var(--k-primary);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    transition: transform .15s ease;
+}
+
+    #cartBadge.bump {
+        transform: scale(1.2);
+    }
+
 /* ============ UTILITIES ============ */
 .text-danger {
     font-size: 12px;

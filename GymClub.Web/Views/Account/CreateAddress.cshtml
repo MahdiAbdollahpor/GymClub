@@ -1,0 +1,74 @@
+﻿@model GymClub.Application.Users.Commands.AddAddress.AddAddressCommand
+@{
+    ViewData["Title"] = "آدرس جدید";
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div><div class="k-label mb-2">حساب کاربری</div><h2>آدرس جدید</h2></div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+        <partial name="_AccountNav" />
+
+        <div class="flex-1 max-w-[720px]">
+            <form asp-action="CreateAddress" method="post" class="k-card">
+                <div asp-validation-summary="ModelOnly" class="k-alert mb-4"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label asp-for="Title" class="k-form-label">عنوان (خانه، محل کار)</label>
+                        <input asp-for="Title" class="k-input" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <label asp-for="ReceiverName" class="k-form-label">نام گیرنده</label>
+                        <input asp-for="ReceiverName" class="k-input" />
+                        <span asp-validation-for="ReceiverName" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Province" class="k-form-label">استان</label>
+                        <input asp-for="Province" class="k-input" />
+                        <span asp-validation-for="Province" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <label asp-for="City" class="k-form-label">شهر</label>
+                        <input asp-for="City" class="k-input" />
+                        <span asp-validation-for="City" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <label asp-for="ReceiverPhone" class="k-form-label">شماره تماس</label>
+                        <input asp-for="ReceiverPhone" class="k-input" dir="ltr" placeholder="09121234567" />
+                        <span asp-validation-for="ReceiverPhone" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <label asp-for="PostalCode" class="k-form-label">کد پستی (اختیاری)</label>
+                        <input asp-for="PostalCode" class="k-input" dir="ltr" />
+                        <span asp-validation-for="PostalCode" class="text-danger"></span>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label asp-for="FullAddress" class="k-form-label">آدرس کامل</label>
+                        <textarea asp-for="FullAddress" class="k-textarea" rows="3"></textarea>
+                        <span asp-validation-for="FullAddress" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 mb-6">
+                    <label class="k-check-label">
+                        <input asp-for="IsDefault" class="k-checkbox" />
+                        <span>این آدرس پیش‌فرض باشد</span>
+                    </label>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="k-btn k-btn-primary k-btn-md">ذخیره</button>
+                    <a asp-action="Addresses" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

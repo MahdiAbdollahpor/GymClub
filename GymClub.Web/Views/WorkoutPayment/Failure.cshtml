@@ -1,0 +1,11 @@
+﻿@{
+    ViewData["Title"] = "پرداخت ناموفق";
+}
+
+<section class="k-container py-20 max-w-[600px]">
+    <div class="k-card text-center">
+        <h2 class="text-[22px] font-bold mb-2">پرداخت انجام نشد</h2>
+        <p class="text-midgray text-[14px] mb-6">@(TempData["PayError"] ?? "خطایی رخ داد")</p>
+        <a asp-controller="Workout" asp-action="Index" class="k-btn k-btn-primary k-btn-md">بازگشت</a>
+    </div>
+</section>

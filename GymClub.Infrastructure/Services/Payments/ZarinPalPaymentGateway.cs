@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using GymClub.Application.Common.Interfaces;
 using GymClub.Application.Common.Settings;
@@ -10,17 +11,29 @@ namespace GymClub.Infrastructure.Services.Payments;
 public class ZarinPalPaymentGateway : IPaymentGateway
 {
     private readonly HttpClient _http;
-    private readonly ZarinPalSettings _settings;
     private readonly ILogger<ZarinPalPaymentGateway> _logger;
+
+    // 🔧 مقادیر Hardcode برای تست
+    private const string MERCHANT_ID = "35ab132c-e623-49d3-896a-3442b1c6561c";
+    private const bool IS_SANDBOX = true;
+    private const string CALLBACK_URL = "https://localhost:44304/payment/callback";
 
     public ZarinPalPaymentGateway(
         HttpClient http,
-        IOptions<ZarinPalSettings> settings,
         ILogger<ZarinPalPaymentGateway> logger)
     {
         _http = http;
-        _settings = settings.Value;
         _logger = logger;
+
+        var baseUri = IS_SANDBOX
+            ? "https://sandbox.zarinpal.com/"
+            : "https://api.zarinpal.com/";
+
+        _http.BaseAddress = new Uri(baseUri);
+        _http.DefaultRequestHeaders.Add("Accept", "application/json");
+
+        _logger.LogInformation("ZarinPal [HARDCODED] MerchantId={MerchantId}, Sandbox={Sandbox}, Callback={Callback}",
+            MERCHANT_ID, IS_SANDBOX, CALLBACK_URL);
     }
 
     public async Task<PaymentRequestResult> RequestAsync(
@@ -29,34 +42,57 @@ public class ZarinPalPaymentGateway : IPaymentGateway
     {
         try
         {
-            var payload = new
+            var amountInRial = (long)(amount * 10);
+
+            var requestData = new
             {
-                merchant_id = _settings.MerchantId,
-                amount = (long)amount,   // ریال
+                merchant_id = MERCHANT_ID,
+                amount = amountInRial,
+                callback_url = CALLBACK_URL,
                 description,
-                callback_url = _settings.CallbackUrl,
-                metadata = new { mobile = mobile ?? "", email = email ?? "" }
+                metadata = new
+                {
+                    mobile = mobile ?? "",
+                    email = email ?? ""
+                }
             };
 
-            var resp = await _http.PostAsJsonAsync(
-                $"{_settings.BaseUrl.TrimEnd('/')}/request.json", payload, ct);
+            var json = JsonSerializer.Serialize(requestData);
+            _logger.LogInformation("ZarinPal Request payload: {Json}", json);
 
-            var result = await resp.Content.ReadFromJsonAsync<ZarinPalRequestResponse>(cancellationToken: ct);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _http.PostAsync("pg/v4/payment/request.json", content, ct);
+            var responseString = await response.Content.ReadAsStringAsync(ct);
+
+            _logger.LogInformation("ZarinPal Response: {Response}", responseString);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new PaymentRequestResult(false, null, null,
+                    $"HTTP {response.StatusCode}");
+            }
+
+            var result = JsonSerializer.Deserialize<ZarinPalResponse>(responseString);
 
             if (result?.Data?.Code == 100 && !string.IsNullOrWhiteSpace(result.Data.Authority))
             {
-                var url = string.Format(_settings.StartPayBaseUrl, result.Data.Authority);
-                return new PaymentRequestResult(true, result.Data.Authority, url, null);
+                var payUrl = IS_SANDBOX
+                    ? $"https://sandbox.zarinpal.com/pg/StartPay/{result.Data.Authority}"
+                    : $"https://www.zarinpal.com/pg/StartPay/{result.Data.Authority}";
+
+                return new PaymentRequestResult(true, result.Data.Authority, payUrl, null);
             }
 
-            var err = result?.Errors?.FirstOrDefault()?.Message ?? "خطای نامشخص در ایجاد تراکنش";
-            _logger.LogWarning("ZarinPal request failed: {Error}", err);
-            return new PaymentRequestResult(false, null, null, err);
+            var errorMsg = result?.Errors?.FirstOrDefault()?.Message
+                        ?? result?.Data?.Message
+                        ?? "خطای نامشخص";
+            return new PaymentRequestResult(false, null, null, errorMsg);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "ZarinPal request exception");
-            return new PaymentRequestResult(false, null, null, "خطا در ارتباط با درگاه پرداخت");
+            return new PaymentRequestResult(false, null, null, "خطا در ارتباط با درگاه");
         }
     }
 
@@ -64,56 +100,57 @@ public class ZarinPalPaymentGateway : IPaymentGateway
     {
         try
         {
-            var payload = new
+            var amountInRial = (long)(amount * 10);
+
+            var requestData = new
             {
-                merchant_id = _settings.MerchantId,
-                amount = (long)amount,
+                merchant_id = MERCHANT_ID,
+                amount = amountInRial,
                 authority
             };
 
-            var resp = await _http.PostAsJsonAsync(
-                $"{_settings.BaseUrl.TrimEnd('/')}/verify.json", payload, ct);
+            var content = new StringContent(
+                JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
 
-            var result = await resp.Content.ReadFromJsonAsync<ZarinPalVerifyResponse>(cancellationToken: ct);
+            var response = await _http.PostAsync("pg/v4/payment/verify.json", content, ct);
+            var responseString = await response.Content.ReadAsStringAsync(ct);
+
+            _logger.LogInformation("ZarinPal Verify: {Response}", responseString);
+
+            if (!response.IsSuccessStatusCode)
+                return new PaymentVerifyResult(false, null, $"HTTP {response.StatusCode}");
+
+            var result = JsonSerializer.Deserialize<ZarinPalResponse>(responseString);
 
             if (result?.Data?.Code == 100 || result?.Data?.Code == 101)
-                return new PaymentVerifyResult(true, result.Data.RefId, null);
+                return new PaymentVerifyResult(true, result.Data.RefId?.ToString(), null);
 
-            var err = result?.Errors?.FirstOrDefault()?.Message ?? "پرداخت تأیید نشد";
-            return new PaymentVerifyResult(false, null, err);
+            return new PaymentVerifyResult(false, null,
+                result?.Errors?.FirstOrDefault()?.Message ?? "تأیید نشد");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "ZarinPal verify exception");
-            return new PaymentVerifyResult(false, null, "خطا در تأیید پرداخت");
+            return new PaymentVerifyResult(false, null, "خطا در تأیید");
         }
     }
 }
 
-// ─── Response Models ───
-internal class ZarinPalRequestResponse
+internal class ZarinPalResponse
 {
-    [JsonPropertyName("data")] public DataObj? Data { get; set; }
-    [JsonPropertyName("errors")] public List<ErrorObj>? Errors { get; set; }
-    internal class DataObj
-    {
-        [JsonPropertyName("code")] public int Code { get; set; }
-        [JsonPropertyName("authority")] public string? Authority { get; set; }
-    }
+    [JsonPropertyName("data")] public ZarinPalData? Data { get; set; }
+    [JsonPropertyName("errors")] public List<ZarinPalError>? Errors { get; set; }
 }
 
-internal class ZarinPalVerifyResponse
+internal class ZarinPalData
 {
-    [JsonPropertyName("data")] public DataObj? Data { get; set; }
-    [JsonPropertyName("errors")] public List<ErrorObj>? Errors { get; set; }
-    internal class DataObj
-    {
-        [JsonPropertyName("code")] public int Code { get; set; }
-        [JsonPropertyName("ref_id")] public string? RefId { get; set; }
-    }
+    [JsonPropertyName("code")] public int Code { get; set; }
+    [JsonPropertyName("message")] public string? Message { get; set; }
+    [JsonPropertyName("authority")] public string? Authority { get; set; }
+    [JsonPropertyName("ref_id")] public long? RefId { get; set; }
 }
 
-internal class ErrorObj
+internal class ZarinPalError
 {
     [JsonPropertyName("code")] public int Code { get; set; }
     [JsonPropertyName("message")] public string? Message { get; set; }

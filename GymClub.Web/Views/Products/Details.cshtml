@@ -73,14 +73,17 @@
                 <div class="mb-6"><span class="k-chip k-chip-warning">ناموجود</span></div>
             }
 
-            <form asp-controller="Cart" asp-action="Add" method="post" class="mb-8">
-                <input type="hidden" name="productId" value="@Model.Id" />
+            <form id="addToCartForm" class="mb-8" onsubmit="return false;">
+                @Html.AntiForgeryToken()
                 <div class="flex items-center gap-3 mb-3">
                     <label class="k-form-label mb-0">تعداد:</label>
-                    <input name="quantity" type="number" value="1" min="1" max="@Model.Stock"
+                    <input id="qtyInput" name="quantity" type="number" value="1" min="1" max="@Model.Stock"
                            class="k-input" style="width:100px" dir="ltr" />
                 </div>
-                <button type="submit" class="k-btn k-btn-primary k-btn-lg w-100"
+                <button type="button"
+                        data-add-to-cart="@Model.Id"
+                        data-qty-source="qtyInput"
+                        class="k-btn k-btn-primary k-btn-lg w-100"
                         @(Model.Stock <= 0 ? "disabled" : "")>
                     افزودن به سبد خرید
                 </button>

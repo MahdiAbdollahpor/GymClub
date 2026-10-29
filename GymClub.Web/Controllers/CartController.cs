@@ -2,6 +2,7 @@
 using GymClub.Application.Cart.Commands.RemoveCartItem;
 using GymClub.Application.Cart.Commands.UpdateCartItem;
 using GymClub.Application.Cart.Queries.GetCart;
+using GymClub.Application.Cart.Queries.GetCartCount;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,5 +38,12 @@ public class CartController : Controller
     {
         var r = await _m.Send(cmd, ct);
         return Json(new { success = r.Succeeded, cartCount = r.Data, message = r.Error });
+    }
+
+    [HttpGet("/cart/count")]
+    public async Task<IActionResult> Count(CancellationToken ct)
+    {
+        var count = await _m.Send(new GetCartCountQuery(), ct);
+        return Json(new { count });
     }
 }

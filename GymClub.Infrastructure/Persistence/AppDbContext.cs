@@ -13,17 +13,13 @@ public class AppDbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public override DbSet<User> Users => base.Users;
-
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
-
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<ArticleCategory> ArticleCategories => Set<ArticleCategory>();
-
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<ProductAttribute> ProductAttributes => Set<ProductAttribute>();
-
     public DbSet<CartEntity> Carts => Set<CartEntity>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
@@ -31,6 +27,14 @@ public class AppDbContext
     public DbSet<DiscountCode> DiscountCodes => Set<DiscountCode>();
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
     public DbSet<Address> Addresses => Set<Address>();
+    public DbSet<WorkoutQuestionnaire> WorkoutQuestionnaires => Set<WorkoutQuestionnaire>();
+    public DbSet<WorkoutQuestion> WorkoutQuestions => Set<WorkoutQuestion>();
+    public DbSet<WorkoutRequest> WorkoutRequests => Set<WorkoutRequest>();
+    public DbSet<WorkoutAnswer> WorkoutAnswers => Set<WorkoutAnswer>();
+    public DbSet<WorkoutProgram> WorkoutPrograms => Set<WorkoutProgram>();
+    public DbSet<WorkoutProgramDay> WorkoutProgramDays => Set<WorkoutProgramDay>();
+    public DbSet<WorkoutExercise> WorkoutExercises => Set<WorkoutExercise>();
+    public DbSet<WorkoutPaymentTransaction> WorkoutPaymentTransactions => Set<WorkoutPaymentTransaction>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

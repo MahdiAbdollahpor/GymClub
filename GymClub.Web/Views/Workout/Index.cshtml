@@ -1,0 +1,141 @@
+﻿@using GymClub.Application.Workouts.Dtos
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "برنامه ورزشی";
+    var q = ViewBag.Questionnaire as QuestionnaireDto;
+    var my = ViewBag.MyRequest as WorkoutRequestDetailsDto;
+    var isAuth = User.Identity?.IsAuthenticated == true;
+
+    string StatusLabel(WorkoutRequestStatus s) => s switch
+    {
+        WorkoutRequestStatus.PendingPayment => "منتظر پرداخت",
+        WorkoutRequestStatus.Paid => "پرداخت شده — منتظر پرسشنامه",
+        WorkoutRequestStatus.AnswersSubmitted => "پرسشنامه ارسال شد — منتظر طراحی",
+        WorkoutRequestStatus.Completed => "آماده مشاهده",
+        WorkoutRequestStatus.Cancelled => "لغو شده",
+        _ => "—"
+    };
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">تناسب اندام</div>
+            <h2>برنامه ورزشی اختصاصی</h2>
+        </div>
+    </div>
+
+    @if (q is null)
+    {
+        <div class="k-card text-center py-16">
+            <p class="text-midgray">در حال حاضر پرسشنامه‌ای برای ثبت‌نام فعال نیست.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-4">
+                <div class="k-card-accent">
+                    <div class="k-label mb-2">پرسشنامه سلامت</div>
+                    <h3 class="text-[22px] font-bold mb-2">@q.Title</h3>
+                    <p class="text-[14px] text-darkgray leading-relaxed whitespace-pre-line">@q.Description</p>
+
+                    <div class="mt-4 flex items-center gap-3">
+                        <span class="k-chip k-chip-neutral">@q.QuestionCount سؤال</span>
+                        <span class="k-chip k-chip-crimson">نسخه @q.Version</span>
+                    </div>
+                </div>
+
+                <div class="k-card">
+                    <h4 class="text-[15px] font-semibold mb-3">چگونه کار می‌کند؟</h4>
+                    <ol class="space-y-2 text-[14px] text-darkgray leading-relaxed">
+                        <li><strong>۱.</strong> هزینه را پرداخت می‌کنید.</li>
+                        <li><strong>۲.</strong> پرسشنامه سلامت را پر می‌کنید.</li>
+                        <li><strong>۳.</strong> مربیان ما برنامه اختصاصی طراحی می‌کنند (حداکثر ۳ روز کاری).</li>
+                        <li><strong>۴.</strong> برنامه در داشبورد شما نمایش داده می‌شود.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="k-card">
+                    <div class="k-label mb-2">هزینه</div>
+                    <div class="font-mono text-[28px] font-bold text-primary mb-3">
+                        @q.Price.ToString("N0")
+                        <span class="text-[13px] text-midgray font-sans">تومان</span>
+                    </div>
+
+                    @if (!isAuth)
+                    {
+                        <a href="/auth/login?returnUrl=/workout"
+                           class="k-btn k-btn-primary k-btn-lg w-100">ورود برای ادامه</a>
+                    }
+                    else if (my is null || my.Status == WorkoutRequestStatus.Cancelled)
+                    {
+                        <button type="button" id="startBtn" class="k-btn k-btn-primary k-btn-lg w-100">
+                            شروع و پرداخت
+                        </button>
+                    }
+                    else if (my.Status == WorkoutRequestStatus.PendingPayment)
+                    {
+                        <div class="k-alert mb-2 text-[13px]">پرداخت شما تکمیل نشده است.</div>
+                        <button type="button" id="startBtn" class="k-btn k-btn-primary k-btn-md w-100">
+                            پرداخت مجدد
+                        </button>
+                    }
+                    else if (my.Status == WorkoutRequestStatus.Paid)
+                    {
+                        <a asp-action="Answers" class="k-btn k-btn-primary k-btn-lg w-100">
+                            پر کردن پرسشنامه
+                        </a>
+                    }
+                    else if (my.Status == WorkoutRequestStatus.AnswersSubmitted)
+                    {
+                        <div class="k-alert k-alert-warning text-[13px]">
+                            پرسشنامه ارسال شد. منتظر طراحی برنامه توسط مربی باشید.
+                        </div>
+                    }
+                    else if (my.Status == WorkoutRequestStatus.Completed)
+                    {
+                        <a asp-controller="Account" asp-action="Workout" class="k-btn k-btn-primary k-btn-lg w-100">
+                            مشاهده برنامه
+                        </a>
+                    }
+                </div>
+
+                @if (my is not null && my.Status != WorkoutRequestStatus.Cancelled)
+                {
+                    <div class="k-card">
+                        <div class="k-label mb-2">وضعیت درخواست شما</div>
+                        <div class="k-chip k-chip-crimson mb-2">@StatusLabel(my.Status)</div>
+                        <div class="text-[12px] text-midgray">@my.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</section>
+
+@section Scripts {
+    <script>
+        const btn = document.getElementById('startBtn');
+        if (btn) btn.onclick = async function () {
+            btn.disabled = true; btn.textContent = 'در حال انتقال...';
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+                const r = await fetch('/workout/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        ...(token ? { 'RequestVerificationToken': token } : {})
+                    }
+                });
+                const j = await r.json();
+                if (j.success) window.location.href = j.paymentUrl;
+                else { alert(j.message); btn.disabled = false; btn.textContent = 'تلاش مجدد'; }
+            } catch {
+                alert('خطای شبکه'); btn.disabled = false; btn.textContent = 'تلاش مجدد';
+            }
+        };
+    </script>
+}

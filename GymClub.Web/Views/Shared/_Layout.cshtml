@@ -9,12 +9,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — GymClub</title>
 
-    <!-- Fonts: Syne (headings latin) + Plus Jakarta Sans (body) + Vazirmatn (persian) -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap RTL (first) -->
+    <!-- Bootstrap RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 
     <!-- Tailwind (preflight off) -->
@@ -47,7 +47,7 @@
                     },
                     boxShadow: {
                         'k-sm': '0 1px 4px rgba(0,0,0,0.12)',
-                        'k': '0 2px 8px rgba(0,0,0,0.16)',
+                        k: '0 2px 8px rgba(0,0,0,0.16)',
                         'k-md': '0 4px 20px rgba(0,0,0,0.20)',
                         'k-lg': '0 8px 40px rgba(0,0,0,0.28)',
                         'k-crimson': '0 4px 20px rgba(204,0,0,0.30)',
@@ -61,11 +61,11 @@
 </head>
 <body class="bg-warm font-sans text-pure">
 
-    <!-- Navigation Bar (Karya: black bg, 60px height) -->
+    <!-- Navigation Bar -->
     <header class="k-navbar">
         <div class="k-container flex items-center justify-between h-full">
 
-            <!-- Logo (left) -->
+            <!-- Logo -->
             <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2 group">
                 <span class="w-8 h-8 bg-primary flex items-center justify-center shadow-k-crimson">
                     <span class="text-white font-mono font-bold text-lg">G</span>
@@ -73,7 +73,7 @@
                 <span class="text-white font-display font-bold text-xl tracking-tight">GymClub</span>
             </a>
 
-            <!-- Main nav (center) -->
+            <!-- Main nav -->
             <nav class="hidden lg:flex items-center gap-8 h-full">
                 @{
                     var navItems = new (string title, string controller, string action)[]
@@ -93,13 +93,19 @@
                 }
             </nav>
 
-            <!-- Actions (right) -->
+            <!-- Actions -->
             <div class="flex items-center gap-2">
-                <a asp-controller="Cart" asp-action="Index" class="k-icon-btn" aria-label="سبد خرید">
+
+                <!-- Cart with badge -->
+                <a asp-controller="Cart" asp-action="Index" class="relative k-icon-btn" aria-label="سبد خرید">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
                               d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
+                    <span id="cartBadge"
+                          class="absolute -top-1 -left-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center hidden">
+                        0
+                    </span>
                 </a>
 
                 @if (SignInManager.IsSignedIn(User))
@@ -114,12 +120,15 @@
                 }
                 else
                 {
-                    <a asp-controller="Auth" asp-action="Login" class="hidden md:inline-block text-[13px] text-midgray hover:text-white transition-colors">ورود</a>
-                    <a asp-controller="Auth" asp-action="Register" class="k-btn k-btn-primary k-btn-sm">ثبت‌نام</a>
+                    <a asp-controller="Auth" asp-action="Login"
+                       class="hidden md:inline-block text-[13px] text-midgray hover:text-white transition-colors">ورود</a>
+                    <a asp-controller="Auth" asp-action="Register"
+                       class="k-btn k-btn-primary k-btn-sm">ثبت‌نام</a>
                 }
 
-                <!-- Mobile -->
-                <button class="lg:hidden k-icon-btn" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
+                <!-- Mobile hamburger -->
+                <button class="lg:hidden k-icon-btn"
+                        onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -197,8 +206,137 @@
         </div>
     </footer>
 
+    <!-- Confirm Modal (partial from step 4) -->
     <partial name="_ConfirmModal" />
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] space-y-2"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global Cart & Toast scripts -->
+    <script>
+        // ─── Toast ───
+        window.toast = (function () {
+            function show(msg, type) {
+                const c = document.getElementById('toastContainer');
+                if (!c) return;
+                const el = document.createElement('div');
+                const color = type === 'success' ? '#16A34A'
+                            : type === 'error'   ? '#CC0000'
+                            : '#0A0A0A';
+                el.style.background = color;
+                el.style.color = '#fff';
+                el.style.padding = '10px 18px';
+                el.style.borderRadius = '8px';
+                el.style.fontSize = '14px';
+                el.style.boxShadow = '0 4px 20px rgba(0,0,0,.2)';
+                el.style.opacity = '0';
+                el.style.transition = 'opacity .2s';
+                el.textContent = msg;
+                c.appendChild(el);
+                requestAnimationFrame(() => el.style.opacity = '1');
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 200);
+                }, 2500);
+            }
+            return {
+                success: msg => show(msg, 'success'),
+                error: msg => show(msg, 'error'),
+                info: msg => show(msg, 'info')
+            };
+        })();
+
+        // ─── Cart Badge ───
+        window.CartBadge = {
+            set(count) {
+                const b = document.getElementById('cartBadge');
+                if (!b) return;
+                b.textContent = count;
+                b.classList.toggle('hidden', !count || count <= 0);
+                if (count > 0) {
+                    b.classList.remove('bump');
+                    void b.offsetWidth;
+                    b.classList.add('bump');
+                }
+            }
+        };
+
+        // بارگذاری اولیه تعداد سبد
+        document.addEventListener('DOMContentLoaded', async function () {
+            try {
+                const r = await fetch('/cart/count');
+                if (r.ok) {
+                    const j = await r.json();
+                    if (j && typeof j.count === 'number') window.CartBadge.set(j.count);
+                }
+            } catch { /* silent */ }
+        });
+
+        // ─── Global addToCart ───
+        window.addToCart = async function (productId, quantity = 1, btn = null) {
+            const orig = btn ? btn.innerHTML : null;
+            if (btn) { btn.disabled = true; btn.innerHTML = 'در حال افزودن...'; }
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+                const r = await fetch('/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(token ? { 'RequestVerificationToken': token } : {})
+                    },
+                    body: new URLSearchParams({ productId, quantity })
+                });
+                const j = await r.json();
+
+                if (j.success) {
+                    window.CartBadge.set(j.cartCount);
+                    window.toast.success('به سبد خرید اضافه شد');
+                    if (btn) {
+                        btn.innerHTML = '✓ اضافه شد';
+                        setTimeout(() => {
+                            if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+                        }, 1200);
+                    }
+                } else {
+                    // اگر کاربر لاگین نیست
+                    if (j.message && j.message.includes('وارد')) {
+                        window.location.href = '/auth/login?returnUrl=' +
+                            encodeURIComponent(location.pathname);
+                        return;
+                    }
+                    window.toast.error(j.message || 'خطا در افزودن به سبد');
+                    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+                }
+            } catch {
+                window.toast.error('خطای شبکه');
+                if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+            }
+        };
+
+        // ─── Event delegation: any [data-add-to-cart] ───
+        document.addEventListener('click', function (e) {
+            const el = e.target.closest('[data-add-to-cart]');
+            if (!el) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            const pid = el.getAttribute('data-add-to-cart');
+            let qty = parseInt(el.getAttribute('data-qty') || '1', 10);
+
+            const qtySrc = el.getAttribute('data-qty-source');
+            if (qtySrc) {
+                const src = document.getElementById(qtySrc);
+                if (src) qty = parseInt(src.value || '1', 10) || 1;
+            }
+
+            window.addToCart(pid, qty, el.tagName === 'BUTTON' ? el : null);
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

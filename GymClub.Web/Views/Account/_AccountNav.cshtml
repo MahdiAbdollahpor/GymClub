@@ -1,0 +1,41 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    bool IsActive(string action) => currentAction == action;
+}
+
+<aside class="lg:w-[240px] flex-shrink-0">
+    <div class="k-card p-0 overflow-hidden sticky top-20">
+        <div class="p-4 border-b border-bordergray bg-lightgray">
+            <div class="k-label mb-1">حساب کاربری</div>
+            <div class="font-bold text-[14px] truncate">@User.Identity!.Name</div>
+        </div>
+        <nav class="py-1">
+            <a asp-action="Index"
+               class="block px-4 py-3 text-[14px] border-r-[3px] @(IsActive("Index") ? "border-primary bg-lightgray text-pure font-medium" : "border-transparent text-darkgray hover:bg-warm")">
+                🏠 داشبورد
+            </a>
+            <a asp-action="Profile"
+               class="block px-4 py-3 text-[14px] border-r-[3px] @(IsActive("Profile") ? "border-primary bg-lightgray text-pure font-medium" : "border-transparent text-darkgray hover:bg-warm")">
+                👤 پروفایل
+            </a>
+            <a asp-action="ChangePassword"
+               class="block px-4 py-3 text-[14px] border-r-[3px] @(IsActive("ChangePassword") ? "border-primary bg-lightgray text-pure font-medium" : "border-transparent text-darkgray hover:bg-warm")">
+                🔒 تغییر رمز
+            </a>
+            <a asp-action="Addresses"
+               class="block px-4 py-3 text-[14px] border-r-[3px] @(IsActive("Addresses") ? "border-primary bg-lightgray text-pure font-medium" : "border-transparent text-darkgray hover:bg-warm")">
+                📍 آدرس‌ها
+            </a>
+            <div class="border-t border-bordergray my-1"></div>
+            <a asp-controller="Orders" asp-action="Index"
+               class="block px-4 py-3 text-[14px] border-r-[3px] border-transparent text-darkgray hover:bg-warm">
+                📦 سفارش‌های من
+            </a>
+            <a asp-controller="Cart" asp-action="Index"
+               class="block px-4 py-3 text-[14px] border-r-[3px] border-transparent text-darkgray hover:bg-warm">
+                🛒 سبد خرید
+            </a>
+        </nav>
+    </div>
+</aside>

@@ -1,0 +1,42 @@
+﻿@model GymClub.Application.Users.Commands.UpdateProfile.UpdateProfileCommand
+@{
+    ViewData["Title"] = "پروفایل";
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div><div class="k-label mb-2">حساب کاربری</div><h2>ویرایش پروفایل</h2></div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+        <partial name="_AccountNav" />
+
+        <div class="flex-1 max-w-[600px]">
+            <form asp-action="Profile" method="post" class="k-card">
+                <div asp-validation-summary="ModelOnly" class="k-alert mb-4"></div>
+
+                <div class="mb-4">
+                    <label asp-for="FullName" class="k-form-label">نام و نام خانوادگی</label>
+                    <input asp-for="FullName" class="k-input" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-6">
+                    <label asp-for="DisplayUserName" class="k-form-label">نام نمایشی</label>
+                    <input asp-for="DisplayUserName" class="k-input" />
+                    <div class="k-helper">این نام در هدر سایت نمایش داده می‌شود.</div>
+                    <span asp-validation-for="DisplayUserName" class="text-danger"></span>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="k-btn k-btn-primary k-btn-md">ذخیره</button>
+                    <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">بازگشت</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

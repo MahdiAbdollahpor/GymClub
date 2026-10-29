@@ -1,0 +1,155 @@
+﻿@using GymClub.Application.Workouts.Dtos
+@{
+    ViewData["Title"] = "پرسشنامه سلامت";
+    var q = ViewBag.Questionnaire as QuestionnaireDto;
+    var groups = q!.Questions.GroupBy(x => x.GroupName ?? "اطلاعات عمومی").ToList();
+}
+
+<section class="k-container py-12 max-w-[820px]">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">پرسشنامه</div>
+            <h2>@q.Title</h2>
+        </div>
+    </div>
+
+    <div class="k-card mb-4">
+        <p class="text-[14px] text-darkgray leading-relaxed">@q.Description</p>
+    </div>
+
+    <form id="answersForm">
+        @foreach (var g in groups)
+        {
+            <div class="k-card mb-4">
+                <div class="k-label mb-3">@g.Key</div>
+                @foreach (var question in g.OrderBy(x => x.SortOrder))
+                {
+                    <div class="mb-4 last:mb-0">
+                        <label class="k-form-label mb-2">
+                            @question.QuestionText
+                            @if (question.IsRequired)
+                            {
+                                <span class="text-primary">*</span>
+                            }
+                        </label>
+
+                        @switch (question.Type)
+                        {
+                            case GymClub.Domain.Enums.QuestionType.Text:
+                                <textarea class="k-textarea q-input" data-qid="@question.Id" data-type="text" rows="2"></textarea>
+                                break;
+                            case GymClub.Domain.Enums.QuestionType.Number:
+                                <input type="number" class="k-input q-input" data-qid="@question.Id" data-type="number" dir="ltr" />
+                                break;
+                            case GymClub.Domain.Enums.QuestionType.Boolean:
+                                <div class="flex gap-4">
+                                    <label class="k-check-label">
+                                        <input type="radio" name="q_@question.Id" value="true"
+                                               class="k-radio q-input" data-qid="@question.Id" data-type="bool" /> بله
+                                    </label>
+                                    <label class="k-check-label">
+                                        <input type="radio" name="q_@question.Id" value="false"
+                                               class="k-radio q-input" data-qid="@question.Id" data-type="bool" /> خیر
+                                    </label>
+                                </div>
+                                break;
+                            case GymClub.Domain.Enums.QuestionType.SingleChoice:
+                                <select class="k-select q-input" data-qid="@question.Id" data-type="single">
+                                    <option value="">— انتخاب کنید —</option>
+                                    @foreach (var o in question.Options)
+                                    {
+                                        <option value="@o">@o</option>
+                                    }
+                                </select>
+                                break;
+                            case GymClub.Domain.Enums.QuestionType.MultiChoice:
+                                <div class="flex flex-wrap gap-3">
+                                    @foreach (var o in question.Options)
+                                    {
+                                        <label class="k-check-label">
+                                            <input type="checkbox" value="@o"
+                                                   class="k-checkbox q-input" data-qid="@question.Id" data-type="multi" /> @o
+                                        </label>
+                                    }
+                                </div>
+                                break;
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="flex gap-2">
+            <button type="submit" class="k-btn k-btn-primary k-btn-lg flex-1">ارسال پرسشنامه</button>
+            <a asp-action="Index" class="k-btn k-btn-ghost k-btn-lg">انصراف</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <script>
+        document.getElementById('answersForm').onsubmit = async function (e) {
+            e.preventDefault();
+
+            // جمع‌آوری پاسخ‌ها
+            const byQ = {};
+            document.querySelectorAll('.q-input').forEach(el => {
+                const qid = el.getAttribute('data-qid');
+                const type = el.getAttribute('data-type');
+                if (!byQ[qid]) byQ[qid] = { questionId: qid };
+
+                if (type === 'bool') {
+                    if (el.checked) byQ[qid].bool = el.value === 'true';
+                } else if (type === 'multi') {
+                    if (el.checked) {
+                        (byQ[qid].list ||= []).push(el.value);
+                    }
+                } else if (type === 'number') {
+                    if (el.value !== '') byQ[qid].number = parseFloat(el.value);
+                } else if (type === 'single') {
+                    if (el.value) byQ[qid].text = el.value;
+                } else {
+                    if (el.value) byQ[qid].text = el.value;
+                }
+            });
+
+            // تبدیل به فرمت [index].field
+            const params = new URLSearchParams();
+            let i = 0;
+            Object.values(byQ).forEach(a => {
+                params.append(`answers[${i}].QuestionId`, a.questionId);
+                if (a.text !== undefined) params.append(`answers[${i}].Text`, a.text);
+                if (a.number !== undefined) params.append(`answers[${i}].Number`, a.number);
+                if (a.bool !== undefined) params.append(`answers[${i}].Bool`, a.bool);
+                if (a.list) a.list.forEach((v, j) => params.append(`answers[${i}].List[${j}]`, v));
+                i++;
+            });
+
+            const btn = e.target.querySelector('button[type=submit]');
+            btn.disabled = true; btn.textContent = 'در حال ارسال...';
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+                const r = await fetch('/workout/answers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        ...(token ? { 'RequestVerificationToken': token } : {})
+                    },
+                    body: params
+                });
+                const j = await r.json();
+                if (j.success) {
+                    window.toast.success('پرسشنامه ارسال شد');
+                    setTimeout(() => window.location.href = '/account', 800);
+                } else {
+                    window.toast.error(j.message);
+                    btn.disabled = false; btn.textContent = 'ارسال پرسشنامه';
+                }
+            } catch {
+                window.toast.error('خطای شبکه');
+                btn.disabled = false; btn.textContent = 'ارسال پرسشنامه';
+            }
+        };
+    </script>
+}

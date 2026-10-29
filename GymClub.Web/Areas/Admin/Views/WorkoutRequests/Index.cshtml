@@ -1,0 +1,73 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Workouts.Dtos.WorkoutRequestListItemDto>
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "درخواست‌های برنامه ورزشی";
+    string StatusLabel(WorkoutRequestStatus s) => s switch
+    {
+        WorkoutRequestStatus.PendingPayment => "منتظر پرداخت",
+        WorkoutRequestStatus.Paid => "پرداخت شده",
+        WorkoutRequestStatus.AnswersSubmitted => "پرسشنامه ارسال شد",
+        WorkoutRequestStatus.Completed => "تکمیل",
+        WorkoutRequestStatus.Cancelled => "لغو",
+        _ => "—"
+    };
+    string Chip(WorkoutRequestStatus s) => s switch
+    {
+        WorkoutRequestStatus.Paid => "k-chip-success",
+        WorkoutRequestStatus.AnswersSubmitted => "k-chip-crimson",
+        WorkoutRequestStatus.Completed => "k-chip-success",
+        WorkoutRequestStatus.Cancelled => "k-chip-warning",
+        _ => "k-chip-neutral"
+    };
+}
+
+<form method="get" class="flex gap-2 mb-4">
+    <input name="search" value="@ViewBag.Search" class="k-input" style="width:240px" placeholder="جستجو..." />
+    <select name="status" class="k-select" style="width:200px">
+        <option value="">همه وضعیت</option>
+        @foreach (var s in Enum.GetValues<WorkoutRequestStatus>())
+        {
+            <option value="@s" selected="@(ViewBag.Status as WorkoutRequestStatus? == s)">@StatusLabel(s)</option>
+        }
+    </select>
+    <button class="k-btn k-btn-dark k-btn-md">فیلتر</button>
+</form>
+
+<div class="k-card p-0 overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3">پرسشنامه</th>
+                <th class="text-right p-3">وضعیت</th>
+                <th class="text-right p-3">مبلغ</th>
+                <th class="text-right p-3">تاریخ</th>
+                <th class="text-left p-3">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var x in Model.Items)
+            {
+                <tr class="border-t border-bordergray hover:bg-warm">
+                    <td class="p-3">@x.QuestionnaireTitle</td>
+                    <td class="p-3"><span class="k-chip @Chip(x.Status)">@StatusLabel(x.Status)</span></td>
+                    <td class="p-3 font-mono">@x.Amount.ToString("N0")</td>
+                    <td class="p-3 font-mono text-[12px] text-midgray">@x.CreatedAt.ToString("yyyy/MM/dd")</td>
+                    <td class="p-3 text-left">
+                        <a asp-action="Details" asp-route-id="@x.Id" class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="flex justify-center gap-1 mt-6">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.Search" asp-route-status="@ViewBag.Status"
+               class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">@i</a>
+        }
+    </div>
+}

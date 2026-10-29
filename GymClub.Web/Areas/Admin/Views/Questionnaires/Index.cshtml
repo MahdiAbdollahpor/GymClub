@@ -1,0 +1,49 @@
+﻿@model List<GymClub.Application.Workouts.Dtos.QuestionnaireDto>
+@{
+    ViewData["Title"] = "پرسشنامه‌های ورزشی";
+}
+
+<div class="flex items-center justify-between mb-4">
+    <span class="text-[13px] text-midgray">@Model.Count پرسشنامه</span>
+    <a asp-action="Create" class="k-btn k-btn-primary k-btn-md">+ پرسشنامه جدید</a>
+</div>
+
+<div class="k-card p-0 overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3">عنوان</th>
+                <th class="text-right p-3">نسخه</th>
+                <th class="text-right p-3">سؤال</th>
+                <th class="text-right p-3">قیمت</th>
+                <th class="text-right p-3">وضعیت</th>
+                <th class="text-left p-3">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var q in Model)
+            {
+                <tr class="border-t border-bordergray">
+                    <td class="p-3 font-medium">@q.Title</td>
+                    <td class="p-3 font-mono">v@q.Version</td>
+                    <td class="p-3 font-mono">@q.QuestionCount</td>
+                    <td class="p-3 font-mono">@q.Price.ToString("N0")</td>
+                    <td class="p-3">
+                        @if (q.IsActive)
+                        {
+                            <span class="k-chip k-chip-success">فعال</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-neutral">غیرفعال</span>
+                        }
+                    </td>
+                    <td class="p-3 text-left">
+                        <a asp-action="Edit" asp-route-id="@q.Id" class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

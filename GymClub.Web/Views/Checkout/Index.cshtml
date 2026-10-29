@@ -19,6 +19,8 @@
                     <h3 class="text-[16px] font-semibold">آدرس تحویل</h3>
                     <a asp-controller="Account" asp-action="Addresses" target="_blank"
                        class="k-link text-[13px]">مدیریت آدرس‌ها ↗</a>
+                    <a asp-controller="Account" asp-action="CreateAddress" target="_blank"
+                       class="k-btn k-btn-ghost k-btn-sm mt-2">+ آدرس جدید</a>
                 </div>
                 @if (!addresses.Any())
                 {

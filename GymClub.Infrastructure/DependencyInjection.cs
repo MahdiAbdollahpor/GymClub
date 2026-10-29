@@ -55,7 +55,7 @@ public static class DependencyInjection
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 
 
-        services.Configure<ZarinPalSettings>(configuration.GetSection("ZarinPal"));
+        //services.Configure<ZarinPalSettings>(configuration.GetSection("ZarinPal"));
         services.AddHttpClient<IPaymentGateway, ZarinPalPaymentGateway>();
 
         services.Configure<OtpSettings>(configuration.GetSection("OtpSettings"));

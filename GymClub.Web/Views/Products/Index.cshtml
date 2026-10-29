@@ -49,7 +49,10 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @foreach (var p in Model.Items)
             {
-                <a asp-action="Details" asp-route-slug="@p.Slug" class="k-product-card text-decoration-none">
+                <div class="k-product-card cursor-pointer group"
+                     onclick="location.href='@Url.Action("Details", "Products", new { slug = p.Slug })'">
+
+                    <!-- تصویر -->
                     <div class="k-product-image">
                         @if (!string.IsNullOrEmpty(p.MainImageUrl))
                         {
@@ -62,29 +65,58 @@
                                       d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
                         }
+
+                        @if (p.Stock <= 0)
+                        {
+                            <span class="absolute top-2 right-2 k-chip k-chip-warning">ناموجود</span>
+                        }
+                        else if (p.HasDiscount)
+                        {
+                            <span class="absolute top-2 right-2 k-chip k-chip-crimson">
+                                @(((p.Price - p.FinalPrice) / p.Price * 100).ToString("N0"))% تخفیف
+                            </span>
+                        }
                     </div>
+
+                    <!-- بدنه -->
                     <div class="k-product-body">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="k-chip k-chip-neutral">@p.CategoryTitle</span>
-                            @if (p.Stock <= 0)
-                            {
-                                <span class="k-chip k-chip-warning">ناموجود</span>
-                            }
                         </div>
-                        <h3 class="k-product-name">@p.Name</h3>
-                        <div class="mt-auto pt-3 flex items-baseline gap-2">
-                            @if (p.HasDiscount)
+                        <h3 class="k-product-name group-hover:text-primary transition-colors">@p.Name</h3>
+
+                        <div class="mt-auto pt-3">
+                            <div class="flex items-baseline gap-2 mb-3">
+                                @if (p.HasDiscount)
+                                {
+                                    <span class="k-product-price">@p.FinalPrice.ToString("N0") تومان</span>
+                                    <span class="text-[12px] text-midgray line-through">@p.Price.ToString("N0")</span>
+                                }
+                                else
+                                {
+                                    <span class="k-product-price">@p.Price.ToString("N0") تومان</span>
+                                }
+                            </div>
+
+                            @if (p.Stock > 0)
                             {
-                                <span class="k-product-price">@p.FinalPrice.ToString("N0") تومان</span>
-                                <span class="text-[12px] text-midgray line-through">@p.Price.ToString("N0")</span>
+                                <button type="button"
+                                        data-add-to-cart="@p.Id"
+                                        data-qty="1"
+                                        class="k-btn k-btn-primary k-btn-sm w-100">
+                                    افزودن به سبد
+                                </button>
                             }
                             else
                             {
-                                <span class="k-product-price">@p.Price.ToString("N0") تومان</span>
+                                <button type="button" disabled
+                                        class="k-btn k-btn-ghost k-btn-sm w-100" style="opacity:.5;cursor:not-allowed">
+                                    ناموجود
+                                </button>
                             }
                         </div>
                     </div>
-                </a>
+                </div>
             }
         </div>
 

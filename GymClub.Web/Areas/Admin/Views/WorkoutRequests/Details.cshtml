@@ -1,0 +1,215 @@
+﻿@model GymClub.Application.Workouts.Dtos.WorkoutRequestDetailsDto
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "جزئیات درخواست";
+    string StatusLabel(WorkoutRequestStatus s) => s switch
+    {
+        WorkoutRequestStatus.PendingPayment => "منتظر پرداخت",
+        WorkoutRequestStatus.Paid => "پرداخت شده",
+        WorkoutRequestStatus.AnswersSubmitted => "پرسشنامه ارسال شد",
+        WorkoutRequestStatus.Completed => "تکمیل شده",
+        WorkoutRequestStatus.Cancelled => "لغو شده",
+        _ => "—"
+    };
+}
+
+<div class="mb-4 flex items-center justify-between flex-wrap gap-2">
+    <div>
+        <div class="k-label mb-1">درخواست برنامه ورزشی</div>
+        <h2 class="text-[20px] font-bold">@Model.QuestionnaireTitle</h2>
+    </div>
+    <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">بازگشت</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-1 space-y-4">
+        <div class="k-card">
+            <div class="k-label mb-2">وضعیت</div>
+            <div class="k-chip k-chip-crimson mb-3">@StatusLabel(Model.Status)</div>
+            <table class="w-full text-[13px]">
+                <tr><td class="py-1 text-midgray">کاربر:</td><td class="font-mono" dir="ltr">@Model.UserPhone</td></tr>
+                <tr><td class="py-1 text-midgray">نام:</td><td>@Model.UserName</td></tr>
+                <tr><td class="py-1 text-midgray">تاریخ:</td><td class="font-mono">@Model.CreatedAt.ToString("yyyy/MM/dd")</td></tr>
+                <tr><td class="py-1 text-midgray">مبلغ:</td><td class="font-mono">@Model.Amount.ToString("N0")</td></tr>
+            </table>
+        </div>
+
+        @if (Model.Answers.Any())
+        {
+            <div class="k-card">
+                <div class="k-label mb-3">پاسخ‌های پرسشنامه</div>
+                @foreach (var g in Model.Answers.GroupBy(a => a.GroupName ?? "عمومی"))
+                {
+                    <div class="mb-3">
+                        <div class="text-[12px] font-semibold text-primary mb-1">@g.Key</div>
+                        @foreach (var a in g)
+                        {
+                            <div class="py-1.5 border-b border-bordergray last:border-0">
+                                <div class="text-[12px] text-midgray">@a.QuestionText</div>
+                                <div class="text-[13px] font-medium">@a.DisplayValue</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="lg:col-span-2">
+        @if (Model.Status == WorkoutRequestStatus.AnswersSubmitted || Model.Program is not null)
+        {
+            <div class="k-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-[15px] font-semibold">طراحی برنامه</h3>
+                    <button type="button" id="addDay" class="k-btn k-btn-ghost k-btn-sm">+ روز</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <input id="programTitle" class="k-input" placeholder="عنوان برنامه (مثلاً برنامه حجم ۴ هفته‌ای)"
+                           value="@Model.Program?.Title" />
+                    <input id="programDesc" class="k-input" placeholder="توضیحات (اختیاری)"
+                           value="@Model.Program?.Description" />
+                </div>
+
+                <div id="daysWrapper" class="space-y-3"></div>
+
+                <div class="flex gap-2 mt-3">
+                    <button type="button" id="saveProgram" class="k-btn k-btn-primary k-btn-md">ذخیره</button>
+                    <label class="k-check-label">
+                        <input type="checkbox" id="publishProgram" class="k-checkbox"
+                               checked="@(Model.Program?.IsVisibleToUser == true)" />
+                        <span>انتشار به کاربر</span>
+                    </label>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="k-card text-center py-12 text-midgray text-[14px]">
+                تا زمانی که کاربر پرسشنامه را ارسال نکند، طراحی برنامه ممکن نیست.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Templates -->
+<template id="dayTemplate">
+    <div class="border border-bordergray rounded p-3 day-item">
+        <div class="grid grid-cols-4 gap-2 mb-2">
+            <input class="k-input day-num" type="number" value="1" min="1" dir="ltr" style="width:70px" />
+            <input class="k-input day-title col-span-3" placeholder="عنوان روز (مثلاً سینه و پشت)" />
+        </div>
+        <div class="exercisesWrapper space-y-2"></div>
+        <button type="button" class="k-btn k-btn-ghost k-btn-sm mt-2 add-ex">+ تمرین</button>
+        <button type="button" class="k-btn k-btn-ghost k-btn-sm mt-2 remove-day" style="color:#CC0000">حذف روز</button>
+    </div>
+</template>
+
+<template id="exTemplate">
+    <div class="grid grid-cols-12 gap-1 exercise-item items-center">
+        <input class="k-input col-span-3 ex-name" placeholder="حرکت" />
+        <input class="k-input col-span-1 ex-sets" type="number" placeholder="ست" dir="ltr" />
+        <input class="k-input col-span-2 ex-reps" placeholder="تکرار (8-12)" />
+        <input class="k-input col-span-1 ex-rest" type="number" placeholder="استراحت" dir="ltr" />
+        <input class="k-input col-span-2 ex-weight" placeholder="وزن" />
+        <input class="k-input col-span-2 ex-notes" placeholder="یادداشت" />
+        <button type="button" class="k-btn k-btn-ghost k-btn-sm col-span-1 remove-ex" style="color:#CC0000">✕</button>
+    </div>
+</template>
+
+@section Scripts {
+    <script>
+        const requestId = '@Model.Id';
+        const existingProgram = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Program));
+
+        function addExercise(dayEl) {
+            const html = document.getElementById('exTemplate').innerHTML;
+            dayEl.querySelector('.exercisesWrapper').insertAdjacentHTML('beforeend', html);
+            bindRemove(dayEl);
+        }
+        function addDay(day) {
+            const tpl = document.getElementById('dayTemplate').innerHTML;
+            document.getElementById('daysWrapper').insertAdjacentHTML('beforeend', tpl);
+            const el = document.getElementById('daysWrapper').lastElementChild;
+            if (day) {
+                el.querySelector('.day-num').value = day.dayNumber;
+                el.querySelector('.day-title').value = day.title;
+                (day.exercises || []).forEach(ex => {
+                    addExercise(el);
+                    const exEl = el.querySelector('.exercisesWrapper').lastElementChild;
+                    exEl.querySelector('.ex-name').value = ex.exerciseName;
+                    exEl.querySelector('.ex-sets').value = ex.sets ?? '';
+                    exEl.querySelector('.ex-reps').value = ex.reps ?? '';
+                    exEl.querySelector('.ex-rest').value = ex.restSeconds ?? '';
+                    exEl.querySelector('.ex-weight').value = ex.weight ?? '';
+                    exEl.querySelector('.ex-notes').value = ex.notes ?? '';
+                });
+            } else {
+                addExercise(el);
+            }
+            bindRemove(el);
+        }
+        function bindRemove(scope = document) {
+            scope.querySelectorAll('.add-ex').forEach(b => b.onclick = () => addExercise(b.closest('.day-item')));
+            scope.querySelectorAll('.remove-ex').forEach(b => b.onclick = () => b.closest('.exercise-item').remove());
+            scope.querySelectorAll('.remove-day').forEach(b => b.onclick = () => b.closest('.day-item').remove());
+        }
+
+        document.getElementById('addDay').onclick = () => addDay(null);
+        bindRemove();
+
+        // اگر برنامه موجود است، بارگذاری کن
+        if (existingProgram) {
+            (existingProgram.days || []).forEach(d => addDay(d));
+        }
+
+        document.getElementById('saveProgram').onclick = async function () {
+            const days = [...document.querySelectorAll('.day-item')].map(d => ({
+                dayNumber: parseInt(d.querySelector('.day-num').value) || 1,
+                title: d.querySelector('.day-title').value,
+                notes: null,
+                exercises: [...d.querySelectorAll('.exercise-item')].map(e => ({
+                    exerciseName: e.querySelector('.ex-name').value,
+                    sets: e.querySelector('.ex-sets').value ? parseInt(e.querySelector('.ex-sets').value) : null,
+                    reps: e.querySelector('.ex-reps').value || null,
+                    restSeconds: e.querySelector('.ex-rest').value ? parseInt(e.querySelector('.ex-rest').value) : null,
+                    weight: e.querySelector('.ex-weight').value || null,
+                    notes: e.querySelector('.ex-notes').value || null,
+                    videoUrl: null
+                })).filter(e => e.exerciseName)
+            })).filter(d => d.title);
+
+            const payload = {
+                requestId: requestId,
+                title: document.getElementById('programTitle').value,
+                description: document.getElementById('programDesc').value || null,
+                startDate: null,
+                endDate: null,
+                publish: document.getElementById('publishProgram').checked,
+                days: days
+            };
+
+            const btn = this;
+            btn.disabled = true; btn.textContent = 'در حال ذخیره...';
+
+            try {
+                const r = await fetch(`/admin/workout-requests/save-program/${requestId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const j = await r.json();
+                if (j.success) {
+                    window.toast.success('برنامه ذخیره شد');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    window.toast.error(j.message || 'خطا');
+                    btn.disabled = false; btn.textContent = 'ذخیره';
+                }
+            } catch {
+                window.toast.error('خطای شبکه');
+                btn.disabled = false; btn.textContent = 'ذخیره';
+            }
+        };
+    </script>
+}

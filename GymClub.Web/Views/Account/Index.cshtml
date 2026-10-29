@@ -1,0 +1,88 @@
+﻿@model GymClub.Application.Users.Queries.GetUserDashboard.UserDashboardDto
+@{
+    ViewData["Title"] = "داشبورد";
+    var profile = ViewBag.Profile as GymClub.Application.Users.Queries.GetProfile.UserProfileDto;
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">حساب کاربری</div>
+            <h2>سلام @(profile?.DisplayUserName ?? "کاربر") 👋</h2>
+        </div>
+        <span class="text-[13px] text-midgray font-mono" dir="ltr">@profile?.PhoneNumber</span>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+        <partial name="_AccountNav" />
+
+        <div class="flex-1 min-w-0 space-y-6">
+            @if (TempData["Success"] != null)
+            {
+                <div class="k-alert k-alert-success">@TempData["Success"]</div>
+            }
+
+            <!-- آمار -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <a asp-controller="Orders" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+                    <div class="k-label mb-2">سفارش‌ها</div>
+                    <div class="font-mono text-[28px] font-bold">@Model.TotalOrders</div>
+                </a>
+                <div class="k-card">
+                    <div class="k-label mb-2">در حال پردازش</div>
+                    <div class="font-mono text-[28px] font-bold text-primary">@Model.PendingOrders</div>
+                </div>
+                <a asp-controller="Cart" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+                    <div class="k-label mb-2">سبد خرید</div>
+                    <div class="font-mono text-[28px] font-bold">@Model.CartItems</div>
+                </a>
+                <a asp-action="Addresses" class="k-card hover:border-primary transition-colors text-decoration-none">
+                    <div class="k-label mb-2">آدرس‌ها</div>
+                    <div class="font-mono text-[28px] font-bold">@Model.AddressCount</div>
+                </a>
+            </div>
+
+            <!-- سفارش‌های اخیر -->
+            <div class="k-card p-0 overflow-hidden">
+                <div class="p-4 border-b border-bordergray flex items-center justify-between">
+                    <h3 class="text-[15px] font-semibold">سفارش‌های اخیر</h3>
+                    <a asp-controller="Orders" asp-action="Index" class="k-link text-[13px]">همه ←</a>
+                </div>
+                @if (!Model.RecentOrders.Any())
+                {
+                    <div class="p-8 text-center text-midgray text-[14px]">
+                        هنوز سفارشی ثبت نکرده‌اید.
+                        <a asp-controller="Products" asp-action="Index" class="k-link">شروع خرید</a>
+                    </div>
+                }
+                else
+                {
+                    <table class="w-full text-[14px]">
+                        <thead class="bg-lightgray">
+                            <tr class="text-[11px] uppercase tracking-wider text-darkgray">
+                                <th class="text-right p-3 font-semibold">شماره</th>
+                                <th class="text-right p-3 font-semibold">مبلغ</th>
+                                <th class="text-right p-3 font-semibold">تاریخ</th>
+                                <th class="text-left p-3 font-semibold"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in Model.RecentOrders)
+                            {
+                                <tr class="border-t border-bordergray">
+                                    <td class="p-3 font-mono">@o.OrderNumber</td>
+                                    <td class="p-3 font-mono">@o.Total.ToString("N0")</td>
+                                    <td class="p-3 font-mono text-[12px] text-midgray">@o.CreatedAt.ToString("yyyy/MM/dd")</td>
+                                    <td class="p-3 text-left">
+                                        <a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id"
+                                           class="k-btn k-btn-ghost k-btn-sm">جزئیات</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</section>

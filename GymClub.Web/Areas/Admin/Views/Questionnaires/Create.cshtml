@@ -1,0 +1,108 @@
+﻿@model GymClub.Application.Workouts.Commands.SaveQuestionnaire.SaveQuestionnaireCommand
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "پرسشنامه جدید";
+}
+
+<form asp-action="Create" method="post" id="qForm">
+    <div asp-validation-summary="ModelOnly" class="k-alert mb-4"></div>
+
+    <div class="k-card mb-4">
+        <div class="mb-3">
+            <label asp-for="Title" class="k-form-label">عنوان پرسشنامه</label>
+            <input asp-for="Title" class="k-input" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Description" class="k-form-label">توضیحات</label>
+            <textarea asp-for="Description" class="k-textarea" rows="2"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label asp-for="Price" class="k-form-label">هزینه (تومان)</label>
+                <input asp-for="Price" type="number" class="k-input" dir="ltr" />
+            </div>
+            <div class="flex items-end">
+                <label class="k-check-label">
+                    <input asp-for="IsActive" class="k-checkbox" />
+                    <span>فعال (به‌عنوان پرسشنامه اصلی)</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="k-card mb-4">
+        <div class="flex items-center justify-between mb-3">
+            <h4 class="k-label">سؤالات</h4>
+            <button type="button" id="addQ" class="k-btn k-btn-ghost k-btn-sm">+ سؤال</button>
+        </div>
+        <div id="questionsWrapper" class="space-y-3"></div>
+    </div>
+
+    <div class="flex gap-2">
+        <button type="submit" class="k-btn k-btn-primary k-btn-md">ذخیره</button>
+        <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+    </div>
+</form>
+
+<!-- Template سؤال -->
+<template id="qTemplate">
+    <div class="border border-bordergray rounded p-3 question-item">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-2">
+            <input name="Questions[IDX].QuestionText" class="k-input md:col-span-3" placeholder="متن سؤال" />
+            <select name="Questions[IDX].Type" class="k-select md:col-span-1 type-select">
+                <option value="0">متنی</option>
+                <option value="1">عددی</option>
+                <option value="2">تک‌گزینه‌ای</option>
+                <option value="3">چندگزینه‌ای</option>
+                <option value="4">بله/خیر</option>
+            </select>
+            <input name="Questions[IDX].GroupName" class="k-input md:col-span-1" placeholder="گروه (اختیاری)" />
+            <label class="k-check-label md:col-span-1 text-[12px]">
+                <input name="Questions[IDX].IsRequired" type="checkbox" value="true" class="k-checkbox" />
+                الزامی
+            </label>
+        </div>
+        <div class="mt-2">
+            <input name="Questions[IDX].OptionsRaw" class="k-input options-input" placeholder="گزینه‌ها (با کاما جدا) — فقط برای انتخابی" />
+        </div>
+        <input type="hidden" name="Questions[IDX].SortOrder" value="IDX" />
+        <button type="button" class="k-btn k-btn-ghost k-btn-sm remove-q mt-2" style="color:#CC0000">حذف</button>
+    </div>
+</template>
+
+@section Scripts {
+    <script>
+        let idx = 0;
+        function bindRemove() {
+            document.querySelectorAll('.remove-q').forEach(b => b.onclick = () => b.closest('.question-item').remove());
+        }
+        function addQuestion() {
+            const tpl = document.getElementById('qTemplate').innerHTML.replaceAll('IDX', idx++);
+            document.getElementById('questionsWrapper').insertAdjacentHTML('beforeend', tpl);
+            bindRemove();
+        }
+        document.getElementById('addQ').onclick = addQuestion;
+        addQuestion();
+
+        // قبل از submit: OptionsRaw → Questions[i].Options
+        document.getElementById('qForm').addEventListener('submit', function () {
+            document.querySelectorAll('.question-item').forEach(item => {
+                const type = item.querySelector('.type-select').value;
+                if (type === '2' || type === '3') {
+                    const raw = item.querySelector('.options-input').value;
+                    const opts = raw.split(',').map(s => s.trim()).filter(Boolean);
+                    const m = item.querySelector('.options-input').name.match(/Questions\[(\d+)\]/);
+                    if (m) {
+                        opts.forEach((o, j) => {
+                            const inp = document.createElement('input');
+                            inp.type = 'hidden';
+                            inp.name = `Questions[${m[1]}].Options[${j}]`;
+                            inp.value = o;
+                            item.appendChild(inp);
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+}
