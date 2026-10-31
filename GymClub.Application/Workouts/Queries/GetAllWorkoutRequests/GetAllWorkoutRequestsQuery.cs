@@ -33,21 +33,26 @@ public class GetAllWorkoutRequestsQueryHandler
 
         var total = await q.CountAsync(ct);
         var items = await q
-            .OrderByDescending(x => x.CreatedAt)
-            .Skip((req.Page - 1) * req.PageSize)
-            .Take(req.PageSize)
-            .Select(x => new WorkoutRequestListItemDto
-            {
-                Id = x.Id,
-                QuestionnaireId = x.QuestionnaireId,
-                QuestionnaireTitle = x.Questionnaire.Title,
-                Status = x.Status,
-                Amount = x.Amount,
-                CreatedAt = x.CreatedAt,
-                PaidAt = x.PaidAt,
-                CompletedAt = x.CompletedAt
-            })
-            .ToListAsync(ct);
+     .OrderByDescending(x => x.CreatedAt)
+     .Skip((req.Page - 1) * req.PageSize)
+     .Take(req.PageSize)
+     .Select(x => new WorkoutRequestListItemDto
+     {
+         Id = x.Id,
+         QuestionnaireId = x.QuestionnaireId,
+         QuestionnaireTitle = x.Questionnaire.Title,
+         Status = x.Status,
+         Amount = x.Amount,
+         CreatedAt = x.CreatedAt,
+         PaidAt = x.PaidAt,
+         CompletedAt = x.CompletedAt,
+         UserPhone = x.User.PhoneNumber,
+         UserName = x.User.DisplayUserName,
+         HasProgram = x.Program != null,
+         ProgramTitle = x.Program != null ? x.Program.Title : null,
+         ProgramDaysCount = x.Program != null ? x.Program.Days.Count : 0
+     })
+     .ToListAsync(ct);
 
         return new PagedResult<WorkoutRequestListItemDto>
         {

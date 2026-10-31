@@ -1,5 +1,6 @@
 ﻿using GymClub.Application.Workouts.Commands.SaveWorkoutProgram;
 using GymClub.Application.Workouts.Queries.GetAllWorkoutRequests;
+using GymClub.Application.Workouts.Queries.GetSavedPrograms;
 using GymClub.Application.Workouts.Queries.GetWorkoutRequestDetails;
 using GymClub.Domain.Enums;
 using MediatR;
@@ -33,11 +34,31 @@ public class WorkoutRequestsController : Controller
         return View(r.Data);
     }
 
+
+    [HttpGet("programs")]
+    public async Task<IActionResult> Programs(string? search, int page = 1, CancellationToken ct = default)
+    {
+        var list = await _m.Send(new GetSavedProgramsQuery(search, page), ct);
+        ViewBag.Search = search;
+        return View(list);
+    }
+
     [HttpPost("save-program/{id:guid}")]
     public async Task<IActionResult> SaveProgram(Guid id, [FromBody] SaveWorkoutProgramCommand cmd, CancellationToken ct)
     {
-        if (id != cmd.RequestId) return BadRequest();
+        Console.WriteLine($"[SaveProgram] id={id}, cmd.RequestId={cmd.RequestId}, days={cmd.Days?.Count}");
+
+        if (id != cmd.RequestId) return BadRequest(new { message = "RequestId mismatch" });
+
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return BadRequest(new { message = string.Join(" | ", errors) });
+        }
+
         var r = await _m.Send(cmd, ct);
+        Console.WriteLine($"[SaveProgram] result: {r.Succeeded}, error: {r.Error}");
+
         return Json(new { success = r.Succeeded, message = r.Error, programId = r.Data });
     }
 }

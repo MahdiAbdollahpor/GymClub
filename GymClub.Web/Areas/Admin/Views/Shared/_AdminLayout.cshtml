@@ -124,6 +124,7 @@
                 <div class="sidebar-section">برنامه ورزشی</div>
                 <a asp-area="Admin" asp-controller="Questionnaires" asp-action="Index">📝 پرسشنامه‌ها</a>
                 <a asp-area="Admin" asp-controller="WorkoutRequests" asp-action="Index">🏋️ درخواست‌های برنامه</a>
+                <a asp-area="Admin" asp-controller="WorkoutRequests" asp-action="Programs">📋 برنامه‌های نوشته‌شده</a>
 
                 <div class="sidebar-section">سایر</div>
                 <a asp-area="" asp-controller="Home" asp-action="Index">🏠 مشاهده سایت</a>
@@ -175,6 +176,7 @@
     </script>
 
     <partial name="_ConfirmModal" />
+    <partial name="_SuccessModal" />
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

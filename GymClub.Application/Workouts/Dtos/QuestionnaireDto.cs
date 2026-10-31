@@ -25,17 +25,7 @@ public class QuestionDto
     public string? GroupName { get; set; }
 }
 
-public class WorkoutRequestListItemDto
-{
-    public Guid Id { get; set; }
-    public Guid QuestionnaireId { get; set; }
-    public string QuestionnaireTitle { get; set; } = string.Empty;
-    public WorkoutRequestStatus Status { get; set; }
-    public decimal Amount { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? PaidAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
-}
+
 
 public class WorkoutRequestDetailsDto
 {

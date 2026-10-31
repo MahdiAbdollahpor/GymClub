@@ -1,0 +1,116 @@
+﻿<!-- Success Modal (Karya style) -->
+<div id="successModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-black/60" onclick="SuccessModal.close()"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-[440px] w-full p-6 relative"
+             style="box-shadow: 0 8px 40px rgba(0,0,0,.28)">
+            <!-- Icon -->
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+                 style="background: rgba(22,163,74,.08)">
+                <svg class="w-8 h-8" style="color:#16A34A" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                          d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+
+            <h3 id="successModalTitle" class="text-[18px] font-bold text-center mb-2">
+                با موفقیت ذخیره شد
+            </h3>
+            <p id="successModalMessage" class="text-[14px] text-midgray text-center leading-relaxed mb-4">
+                تغییرات با موفقیت اعمال شد.
+            </p>
+
+            <div id="successModalDetails" class="hidden mb-4">
+                <div class="border border-bordergray rounded-lg overflow-hidden">
+                    <table class="w-full text-[13px]">
+                        <tbody id="successModalDetailsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="button" onclick="SuccessModal.close()"
+                        class="k-btn k-btn-ghost k-btn-md flex-1">
+                    بستن
+                </button>
+                <button type="button" id="successModalOk"
+                        class="k-btn k-btn-primary k-btn-md flex-1">
+                    متوجه شدم
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.SuccessModal = (function () {
+        let _onClose = null;
+        let _redirectUrl = null;
+
+        function open(opts) {
+            _onClose = opts.onClose || null;
+            _redirectUrl = opts.redirectUrl || null;
+
+            document.getElementById('successModalTitle').textContent = opts.title || 'با موفقیت ذخیره شد';
+            document.getElementById('successModalMessage').textContent = opts.message || 'تغییرات با موفقیت اعمال شد.';
+
+            const detailsEl = document.getElementById('successModalDetails');
+            const bodyEl = document.getElementById('successModalDetailsBody');
+            bodyEl.innerHTML = '';
+
+            if (opts.details && Array.isArray(opts.details) && opts.details.length) {
+                opts.details.forEach(d => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-bordergray last:border-0';
+                    tr.innerHTML = `
+                        <td class="py-2 px-3 text-midgray w-[45%]">${d.label}</td>
+                        <td class="py-2 px-3 font-medium">${d.value}</td>
+                    `;
+                    bodyEl.appendChild(tr);
+                });
+                detailsEl.classList.remove('hidden');
+            } else {
+                detailsEl.classList.add('hidden');
+            }
+
+            const okBtn = document.getElementById('successModalOk');
+            okBtn.textContent = opts.okText || 'متوجه شدم';
+            okBtn.className = 'k-btn k-btn-primary k-btn-md flex-1';
+
+            document.getElementById('successModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            okBtn.focus();
+        }
+
+        function close() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.body.style.overflow = '';
+
+            if (_onClose) {
+                const cb = _onClose;
+                _onClose = null;
+                _redirectUrl = null;
+                cb();
+                return;
+            }
+            if (_redirectUrl) {
+                const url = _redirectUrl;
+                _redirectUrl = null;
+                window.location.href = url;
+            }
+        }
+
+        function confirmAction() {
+            close();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('successModalOk').addEventListener('click', confirmAction);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') close();
+            });
+        });
+
+        return { open, close };
+    })();
+</script>

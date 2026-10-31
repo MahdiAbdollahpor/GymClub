@@ -1,0 +1,52 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Workouts.Queries.GetSavedPrograms.SavedProgramDto>
+@{
+    ViewData["Title"] = "برنامه‌های ورزشی نوشته‌شده";
+}
+
+<form method="get" class="flex gap-2 mb-4">
+    <input name="search" value="@ViewBag.Search" class="k-input" style="width:300px" placeholder="جستجوی عنوان/کاربر..." />
+    <button class="k-btn k-btn-dark k-btn-md">جستجو</button>
+</form>
+
+<div class="k-card p-0 overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3">عنوان برنامه</th>
+                <th class="text-right p-3">کاربر</th>
+                <th class="text-right p-3">روزها / حرکات</th>
+                <th class="text-right p-3">انتشار</th>
+                <th class="text-right p-3">تاریخ</th>
+                <th class="text-left p-3">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var p in Model.Items)
+            {
+                <tr class="border-t border-bordergray hover:bg-warm">
+                    <td class="p-3 font-medium">@p.Title</td>
+                    <td class="p-3">
+                        <div>@p.UserName</div>
+                        <div class="text-[12px] text-midgray font-mono" dir="ltr">@p.UserPhone</div>
+                    </td>
+                    <td class="p-3 font-mono">@p.DaysCount / @p.ExercisesCount</td>
+                    <td class="p-3">
+                        @if (p.IsVisibleToUser)
+                        {
+                            <span class="k-chip k-chip-success">بله</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-neutral">خیر</span>
+                        }
+                    </td>
+                    <td class="p-3 font-mono text-[12px] text-midgray">@p.CreatedAt.ToString("yyyy/MM/dd")</td>
+                    <td class="p-3 text-left">
+                        <a asp-action="Details" asp-route-id="@p.RequestId" class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

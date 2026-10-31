@@ -24,13 +24,19 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-1 space-y-4">
         <div class="k-card">
-            <div class="k-label mb-2">وضعیت</div>
-            <div class="k-chip k-chip-crimson mb-3">@StatusLabel(Model.Status)</div>
+            <div class="k-label mb-2">اطلاعات کاربر</div>
             <table class="w-full text-[13px]">
-                <tr><td class="py-1 text-midgray">کاربر:</td><td class="font-mono" dir="ltr">@Model.UserPhone</td></tr>
-                <tr><td class="py-1 text-midgray">نام:</td><td>@Model.UserName</td></tr>
-                <tr><td class="py-1 text-midgray">تاریخ:</td><td class="font-mono">@Model.CreatedAt.ToString("yyyy/MM/dd")</td></tr>
-                <tr><td class="py-1 text-midgray">مبلغ:</td><td class="font-mono">@Model.Amount.ToString("N0")</td></tr>
+                <tr><td class="py-1 text-midgray w-[40%]">نام:</td><td>@Model.UserName</td></tr>
+                <tr><td class="py-1 text-midgray">موبایل:</td><td class="font-mono" dir="ltr">@Model.UserPhone</td></tr>
+                <tr><td class="py-1 text-midgray">وضعیت:</td><td><span class="k-chip k-chip-crimson">@StatusLabel(Model.Status)</span></td></tr>
+                <tr><td class="py-1 text-midgray">تاریخ درخواست:</td><td class="font-mono">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td></tr>
+                <tr><td class="py-1 text-midgray">مبلغ:</td><td class="font-mono">@Model.Amount.ToString("N0") تومان</td></tr>
+                @if (Model.Program is not null)
+                {
+                    <tr><td class="py-1 text-midgray">برنامه فعلی:</td><td class="font-medium">@Model.Program.Title</td></tr>
+                    <tr><td class="py-1 text-midgray">تعداد روزها:</td><td class="font-mono">@Model.Program.Days.Count</td></tr>
+                    <tr><td class="py-1 text-midgray">آخرین ذخیره:</td><td class="font-mono">@Model.Program.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td></tr>
+                }
             </table>
         </div>
 
@@ -163,7 +169,8 @@
             (existingProgram.days || []).forEach(d => addDay(d));
         }
 
-        document.getElementById('saveProgram').onclick = async function () {
+                      document.getElementById('saveProgram').onclick = async function () {
+            const btn = this;
             const days = [...document.querySelectorAll('.day-item')].map(d => ({
                 dayNumber: parseInt(d.querySelector('.day-num').value) || 1,
                 title: d.querySelector('.day-title').value,
@@ -179,18 +186,27 @@
                 })).filter(e => e.exerciseName)
             })).filter(d => d.title);
 
+            if (!days.length) {
+                window.toast?.error('حداقل یک روز تمرینی با عنوان وارد کنید');
+                return;
+            }
+
+            const programTitle = document.getElementById('programTitle').value;
+            const programDesc = document.getElementById('programDesc').value || null;
+            const publish = document.getElementById('publishProgram').checked;
+
             const payload = {
                 requestId: requestId,
-                title: document.getElementById('programTitle').value,
-                description: document.getElementById('programDesc').value || null,
+                title: programTitle,
+                description: programDesc,
                 startDate: null,
                 endDate: null,
-                publish: document.getElementById('publishProgram').checked,
+                publish: publish,
                 days: days
             };
 
-            const btn = this;
-            btn.disabled = true; btn.textContent = 'در حال ذخیره...';
+            btn.disabled = true;
+            btn.textContent = 'در حال ذخیره...';
 
             try {
                 const r = await fetch(`/admin/workout-requests/save-program/${requestId}`, {
@@ -198,17 +214,45 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const j = await r.json();
-                if (j.success) {
-                    window.toast.success('برنامه ذخیره شد');
-                    setTimeout(() => location.reload(), 800);
-                } else {
-                    window.toast.error(j.message || 'خطا');
-                    btn.disabled = false; btn.textContent = 'ذخیره';
+
+                const text = await r.text();
+                let j;
+                try { j = JSON.parse(text); } catch { j = { success: false, message: text }; }
+
+                if (r.ok && j.success) {
+                    // محاسبه‌ی خلاصه برای نمایش
+                    const totalExercises = days.reduce((sum, d) => sum + d.exercises.length, 0);
+                    const dayTitles = days.map(d => `روز ${d.dayNumber}: ${d.title}`).join(' | ');
+
+                    SuccessModal.open({
+                        title: '✅ برنامه ذخیره شد',
+                        message: publish
+                            ? 'برنامه طراحی و برای کاربر منتشر شد.'
+                            : 'برنامه ذخیره شد. برای نمایش به کاربر باید انتشار را فعال کنید.',
+                        okText: 'مشاهده',
+                        details: [
+                            { label: 'عنوان برنامه', value: programTitle || '—' },
+                            { label: 'تعداد روزها', value: days.length },
+                            { label: 'تعداد حرکات', value: totalExercises },
+                            { label: 'وضعیت انتشار', value: publish ? 'منتشر شده ✓' : 'پیش‌نویس' },
+                            { label: 'روزها', value: dayTitles }
+                        ],
+                        onClose: () => location.reload()
+                    });
+
+                    btn.disabled = false;
+                    btn.textContent = 'ذخیره';
+                    return;
                 }
-            } catch {
-                window.toast.error('خطای شبکه');
-                btn.disabled = false; btn.textContent = 'ذخیره';
+
+                window.toast?.error(j.message || 'خطا در ذخیره') || alert(j.message || 'خطا در ذخیره');
+            } catch (err) {
+                console.error('Fetch error:', err);
+                window.toast?.error('خطای شبکه') || alert('خطای شبکه');
+            } finally {
+                setTimeout(() => {
+                    if (btn) { btn.disabled = false; btn.textContent = 'ذخیره'; }
+                }, 1000);
             }
         };
     </script>

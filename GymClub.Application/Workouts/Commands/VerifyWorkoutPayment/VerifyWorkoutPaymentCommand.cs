@@ -24,51 +24,98 @@ public class VerifyWorkoutPaymentCommandHandler
     private readonly IDateTimeProvider _clock;
 
     public VerifyWorkoutPaymentCommandHandler(
-        IApplicationDbContext db, IPaymentGateway payment, IDateTimeProvider clock)
+        IApplicationDbContext db,
+        IPaymentGateway payment,
+        IDateTimeProvider clock)
     {
-        _db = db; _payment = payment; _clock = clock;
+        _db = db;
+        _payment = payment;
+        _clock = clock;
     }
 
-    public async Task<Result<WorkoutVerifyResult>> Handle(VerifyWorkoutPaymentCommand req, CancellationToken ct)
+    public async Task<Result<WorkoutVerifyResult>> Handle(
+        VerifyWorkoutPaymentCommand req, CancellationToken ct)
     {
+        // ─── ۱. یافتن تراکنش ───
         var tx = await _db.WorkoutPaymentTransactions
             .Include(x => x.WorkoutRequest)
             .FirstOrDefaultAsync(x => x.Authority == req.Authority, ct);
-        if (tx is null) return Result<WorkoutVerifyResult>.Fail("تراکنش یافت نشد");
 
+        if (tx is null)
+            return Result<WorkoutVerifyResult>.Fail("تراکنش یافت نشد");
+
+        var request = tx.WorkoutRequest;
+
+        // ─── ۲. اگر قبلاً تأیید شده (Idempotent) ───
         if (tx.Status == PaymentStatus.Verified)
+        {
             return Result<WorkoutVerifyResult>.Ok(new WorkoutVerifyResult
-            { RequestId = tx.WorkoutRequestId, Success = true, Message = "قبلاً تأیید شده" });
+            {
+                RequestId = request.Id,
+                Success = true,
+                Message = "پرداخت قبلاً تأیید شده است"
+            });
+        }
 
+        // ─── ۳. اگر درگاه لغو کرده (Status != OK) ───
         if (!req.Status.Equals("OK", StringComparison.OrdinalIgnoreCase))
         {
             tx.Status = PaymentStatus.Cancelled;
-            tx.GatewayMessage = "کاربر لغو کرد";
+            tx.GatewayMessage = "کاربر از پرداخت انصراف داد";
+
+            // درخواست را لغو کن تا کاربر بتواند دوباره تلاش کند
+            if (request.Status == WorkoutRequestStatus.PendingPayment)
+                request.Status = WorkoutRequestStatus.Cancelled;
+
             await _db.SaveChangesAsync(ct);
+
             return Result<WorkoutVerifyResult>.Ok(new WorkoutVerifyResult
-            { RequestId = tx.WorkoutRequestId, Success = false, Message = "پرداخت لغو شد" });
+            {
+                RequestId = request.Id,
+                Success = false,
+                Message = "پرداخت لغو شد"
+            });
         }
 
-        var v = await _payment.VerifyAsync(req.Authority, tx.Amount, ct);
-        if (!v.Success)
+        // ─── ۴. تأیید از زرین‌پال ───
+        var verify = await _payment.VerifyAsync(req.Authority, tx.Amount, ct);
+
+        if (!verify.Success)
         {
             tx.Status = PaymentStatus.Failed;
-            tx.GatewayMessage = v.Error;
+            tx.GatewayMessage = verify.Error;
+
+            // درخواست را لغو کن
+            if (request.Status == WorkoutRequestStatus.PendingPayment)
+                request.Status = WorkoutRequestStatus.Cancelled;
+
             await _db.SaveChangesAsync(ct);
+
             return Result<WorkoutVerifyResult>.Ok(new WorkoutVerifyResult
-            { RequestId = tx.WorkoutRequestId, Success = false, Message = v.Error });
+            {
+                RequestId = request.Id,
+                Success = false,
+                Message = verify.Error ?? "پرداخت تأیید نشد"
+            });
         }
 
+        // ─── ۵. پرداخت موفق ───
         var now = _clock.UtcNow;
+
         tx.Status = PaymentStatus.Verified;
-        tx.RefId = v.RefId;
+        tx.RefId = verify.RefId;
         tx.VerifiedAt = now;
 
-        tx.WorkoutRequest.Status = WorkoutRequestStatus.Paid;
-        tx.WorkoutRequest.PaidAt = now;
+        request.Status = WorkoutRequestStatus.Paid;
+        request.PaidAt = now;
 
         await _db.SaveChangesAsync(ct);
+
         return Result<WorkoutVerifyResult>.Ok(new WorkoutVerifyResult
-        { RequestId = tx.WorkoutRequestId, Success = true, Message = "پرداخت موفق" });
+        {
+            RequestId = request.Id,
+            Success = true,
+            Message = "پرداخت با موفقیت انجام شد"
+        });
     }
 }

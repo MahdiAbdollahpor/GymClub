@@ -23,48 +23,107 @@ public class CreateWorkoutRequestCommandHandler
     private readonly IPaymentGateway _payment;
 
     public CreateWorkoutRequestCommandHandler(
-        IApplicationDbContext db, ICurrentUserService current, IPaymentGateway payment)
+        IApplicationDbContext db,
+        ICurrentUserService current,
+        IPaymentGateway payment)
     {
-        _db = db; _current = current; _payment = payment;
+        _db = db;
+        _current = current;
+        _payment = payment;
     }
 
-    public async Task<Result<WorkoutPaymentResult>> Handle(CreateWorkoutRequestCommand req, CancellationToken ct)
+    public async Task<Result<WorkoutPaymentResult>> Handle(
+        CreateWorkoutRequestCommand req, CancellationToken ct)
     {
-        if (_current.UserId is null) return Result<WorkoutPaymentResult>.Fail("ابتدا وارد شوید");
+        if (_current.UserId is null)
+            return Result<WorkoutPaymentResult>.Fail("ابتدا وارد شوید");
+
         var userId = _current.UserId.Value;
 
+        // ─── ۱. لغو درخواست‌های PendingPayment قبلی (پرداخت ناتمام) ───
+        var stalePending = await _db.WorkoutRequests
+            .Where(x => x.UserId == userId
+                     && x.Status == WorkoutRequestStatus.PendingPayment)
+            .ToListAsync(ct);
+
+        foreach (var stale in stalePending)
+        {
+            stale.Status = WorkoutRequestStatus.Cancelled;
+            stale.AdminNote = "پرداخت ناتمام — لغو خودکار";
+
+            // تراکنش‌های Initiated مرتبط را هم لغو کن
+            var staleTx = await _db.WorkoutPaymentTransactions
+                .Where(t => t.WorkoutRequestId == stale.Id
+                         && t.Status == PaymentStatus.Initiated)
+                .ToListAsync(ct);
+
+            foreach (var tx in staleTx)
+            {
+                tx.Status = PaymentStatus.Cancelled;
+                tx.GatewayMessage = "لغو خودکار به دلیل پرداخت ناتمام";
+            }
+        }
+
+        if (stalePending.Any())
+            await _db.SaveChangesAsync(ct);
+
+        // ─── ۲. بررسی درخواست فعال (Paid / AnswersSubmitted / Completed) ───
         var active = await _db.WorkoutRequests
             .AnyAsync(x => x.UserId == userId
-                        && x.Status != WorkoutRequestStatus.Cancelled
-                        && x.Status != WorkoutRequestStatus.Completed, ct);
-        if (active) return Result<WorkoutPaymentResult>.Fail("شما یک درخواست فعال دارید");
+                        && (x.Status == WorkoutRequestStatus.Paid
+                         || x.Status == WorkoutRequestStatus.AnswersSubmitted
+                         || x.Status == WorkoutRequestStatus.Completed), ct);
 
-        var q = await _db.WorkoutQuestionnaires
+        if (active)
+            return Result<WorkoutPaymentResult>.Fail("شما یک درخواست فعال دارید");
+
+        // ─── ۳. یافتن پرسشنامه فعال ───
+        var questionnaire = await _db.WorkoutQuestionnaires
             .Where(x => !x.IsDeleted && x.IsActive)
             .OrderByDescending(x => x.Version)
             .FirstOrDefaultAsync(ct);
-        if (q is null) return Result<WorkoutPaymentResult>.Fail("پرسشنامه فعالی وجود ندارد");
 
+        if (questionnaire is null)
+            return Result<WorkoutPaymentResult>.Fail("پرسشنامه فعالی وجود ندارد");
+
+        // ─── ۴. ایجاد درخواست ───
         var request = new WorkoutRequest
         {
             UserId = userId,
-            QuestionnaireId = q.Id,
+            QuestionnaireId = questionnaire.Id,
             Status = WorkoutRequestStatus.PendingPayment,
-            Amount = q.Price
+            Amount = questionnaire.Price
         };
         _db.WorkoutRequests.Add(request);
         await _db.SaveChangesAsync(ct);
 
-        var pay = await _payment.RequestAsync(q.Price, $"برنامه ورزشی — {q.Title}", null, null, ct);
-        if (!pay.Success)
-            return Result<WorkoutPaymentResult>.Fail($"خطا در ایجاد تراکنش: {pay.Error}");
+        // ─── ۵. درخواست پرداخت از زرین‌پال ───
+        var pay = await _payment.RequestAsync(
+    questionnaire.Price,
+    $"برنامه ورزشی — {questionnaire.Title}",
+    _current.PhoneNumber,   // ← شماره موبایل کاربر
+    null,
+    ct);
 
+        if (!pay.Success)
+        {
+            // اگر ایجاد تراکنش ناموفق بود، درخواست را لغو کن
+            request.Status = WorkoutRequestStatus.Cancelled;
+            request.AdminNote = $"خطای درگاه: {pay.Error}";
+            await _db.SaveChangesAsync(ct);
+
+            return Result<WorkoutPaymentResult>.Fail(
+                $"خطا در ایجاد تراکنش: {pay.Error}");
+        }
+
+        // ─── ۶. ثبت تراکنش ───
         _db.WorkoutPaymentTransactions.Add(new WorkoutPaymentTransaction
         {
             WorkoutRequestId = request.Id,
             Authority = pay.Authority!,
-            Amount = q.Price,
-            Status = PaymentStatus.Initiated
+            Amount = questionnaire.Price,
+            Status = PaymentStatus.Initiated,
+            Gateway = "ZarinPal"
         });
         await _db.SaveChangesAsync(ct);
 

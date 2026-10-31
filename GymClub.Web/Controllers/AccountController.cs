@@ -8,6 +8,7 @@ using GymClub.Application.Users.Queries.GetAddressById;
 using GymClub.Application.Users.Queries.GetAddresses;
 using GymClub.Application.Users.Queries.GetProfile;
 using GymClub.Application.Users.Queries.GetUserDashboard;
+using GymClub.Application.Workouts.Queries.GetMyWorkoutRequest;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -120,6 +121,27 @@ public class AccountController : Controller
         }
         TempData["Success"] = "آدرس به‌روزرسانی شد";
         return RedirectToAction(nameof(Addresses));
+    }
+
+    [HttpGet("workout")]
+    public async Task<IActionResult> Workout(CancellationToken ct)
+    {
+        var my = await _m.Send(new GetMyWorkoutRequestQuery(), ct);
+
+        if (!my.Succeeded || my.Data is null)
+        {
+            TempData["Error"] = "برنامه‌ای یافت نشد. ابتدا پرسشنامه را تکمیل کنید.";
+            return RedirectToAction("Index", "Workout");
+        }
+
+        if (my.Data.Status != Domain.Enums.WorkoutRequestStatus.Completed
+            && my.Data.Program is null)
+        {
+            TempData["Error"] = "برنامه شما هنوز آماده نشده است.";
+            return RedirectToAction("Index", "Workout");
+        }
+
+        return View(my.Data.Program);
     }
 
     [HttpPost("addresses/delete/{id:guid}")]

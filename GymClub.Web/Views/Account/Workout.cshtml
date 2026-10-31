@@ -1,0 +1,102 @@
+﻿@model GymClub.Application.Workouts.Dtos.WorkoutProgramDto
+@{
+    ViewData["Title"] = "برنامه ورزشی من";
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">برنامه ورزشی</div>
+            <h2>@Model.Title</h2>
+        </div>
+        <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">بازگشت به داشبورد</a>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+        <partial name="_AccountNav" />
+
+        <div class="flex-1 min-w-0 space-y-6">
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="k-card-accent">
+                    <div class="k-label mb-2">توضیحات مربی</div>
+                    <p class="text-[14px] text-darkgray leading-relaxed whitespace-pre-line">@Model.Description</p>
+                </div>
+            }
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                @if (Model.StartDate.HasValue)
+                {
+                    <div class="k-card">
+                        <div class="k-label mb-1">شروع</div>
+                        <div class="font-mono font-semibold">@Model.StartDate.Value.ToString("yyyy/MM/dd")</div>
+                    </div>
+                }
+                @if (Model.EndDate.HasValue)
+                {
+                    <div class="k-card">
+                        <div class="k-label mb-1">پایان</div>
+                        <div class="font-mono font-semibold">@Model.EndDate.Value.ToString("yyyy/MM/dd")</div>
+                    </div>
+                }
+                <div class="k-card">
+                    <div class="k-label mb-1">تعداد روزها</div>
+                    <div class="font-mono font-semibold">@Model.Days.Count</div>
+                </div>
+            </div>
+
+            @foreach (var day in Model.Days.OrderBy(d => d.DayNumber))
+            {
+                <div class="k-card">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <div class="k-label mb-1">روز @day.DayNumber</div>
+                            <h3 class="text-[18px] font-bold">@day.Title</h3>
+                        </div>
+                        <span class="k-chip k-chip-crimson">@day.Exercises.Count حرکت</span>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(day.Notes))
+                    {
+                        <div class="k-alert mb-3 text-[13px]">@day.Notes</div>
+                    }
+
+                    <div class="space-y-2">
+                        @foreach (var ex in day.Exercises.OrderBy(e => e.SortOrder))
+                        {
+                            <div class="border border-bordergray rounded p-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1">
+                                        <div class="font-semibold text-[14px]">@ex.ExerciseName</div>
+                                        @if (!string.IsNullOrEmpty(ex.Notes))
+                                        {
+                                            <div class="text-[12px] text-midgray mt-1">@ex.Notes</div>
+                                        }
+                                    </div>
+                                    <div class="flex flex-wrap gap-1 text-[11px]">
+                                        @if (ex.Sets.HasValue)
+                                        {
+                                            <span class="k-chip k-chip-neutral">@ex.Sets ست</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(ex.Reps))
+                                        {
+                                            <span class="k-chip k-chip-neutral">@ex.Reps تکرار</span>
+                                        }
+                                        @if (ex.RestSeconds.HasValue)
+                                        {
+                                            <span class="k-chip k-chip-neutral">استراحت @ex.RestSeconds ثانیه</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(ex.Weight))
+                                        {
+                                            <span class="k-chip k-chip-crimson">@ex.Weight</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
