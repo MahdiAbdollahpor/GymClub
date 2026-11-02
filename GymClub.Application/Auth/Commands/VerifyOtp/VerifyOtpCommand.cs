@@ -37,6 +37,8 @@ public class VerifyOtpCommandHandler : IRequestHandler<VerifyOtpCommand, Result<
 
         var user = await _userManager.FindByNameAsync(req.PhoneNumber);
         if (user is null) return Result<Guid>.Fail("کاربر یافت نشد");
+        if (!user.IsActive)
+            return Result<Guid>.Fail("حساب شما غیرفعال شده است. با پشتیبانی تماس بگیرید.");
 
         user.IsPhoneConfirmed = true;
         user.PhoneNumberConfirmed = true;

@@ -1,7 +1,182 @@
-﻿@{
+﻿@model GymClub.Application.Dashboard.Queries.GetAdminDashboardStats.AdminDashboardStatsDto
+@using GymClub.Domain.Enums
+@{
     ViewData["Title"] = "داشبورد";
+    string OrderStatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.PendingPayment => "منتظر پرداخت",
+        OrderStatus.Paid => "پرداخت‌شده",
+        OrderStatus.Confirmed => "تأیید شده",
+        OrderStatus.Shipped => "ارسال شده",
+        OrderStatus.Cancelled => "لغو شده",
+        _ => "—"
+    };
 }
-<div class="k-card">
-    <h2 class="text-[20px] font-bold mb-2">به پنل مدیریت خوش آمدید 👋</h2>
-    <p class="text-[14px] text-midgray">از منوی کناری بخش موردنظر را انتخاب کنید.</p>
+
+<!-- کارت‌های مالی -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+    <div class="k-card-accent">
+        <div class="k-label mb-2">درآمد امروز</div>
+        <div class="font-mono text-[28px] font-bold text-primary">@Model.TodayRevenue.ToString("N0")</div>
+        <div class="text-[12px] text-midgray mt-1">تومان</div>
+    </div>
+    <div class="k-card">
+        <div class="k-label mb-2">درآمد این ماه</div>
+        <div class="font-mono text-[28px] font-bold">@Model.MonthRevenue.ToString("N0")</div>
+        <div class="text-[12px] text-midgray mt-1">تومان</div>
+    </div>
+    <div class="k-card">
+        <div class="k-label mb-2">درآمد کل</div>
+        <div class="font-mono text-[28px] font-bold">@Model.TotalRevenue.ToString("N0")</div>
+        <div class="text-[12px] text-midgray mt-1">تومان</div>
+    </div>
+</div>
+
+<!-- آمار اصلی -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <a asp-controller="Orders" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">سفارشات</div>
+        <div class="font-mono text-[24px] font-bold">@Model.TotalOrders</div>
+        <div class="text-[11px] text-midgray mt-1">@Model.PendingOrders منتظر تأیید</div>
+    </a>
+    <a asp-controller="Users" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">کاربران</div>
+        <div class="font-mono text-[24px] font-bold">@Model.TotalUsers</div>
+        <div class="text-[11px] text-success mt-1">+@Model.TodayUsers امروز</div>
+    </a>
+    <a asp-controller="Products" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">محصولات</div>
+        <div class="font-mono text-[24px] font-bold">@Model.ActiveProducts</div>
+        <div class="text-[11px] text-warning mt-1">@Model.OutOfStockProducts ناموجود</div>
+    </a>
+    <a asp-controller="WorkoutRequests" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">برنامه ورزشی</div>
+        <div class="font-mono text-[24px] font-bold">@Model.TotalWorkoutRequests</div>
+        <div class="text-[11px] text-primary mt-1">@Model.PendingWorkoutRequests در انتظار</div>
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- نمودار ۳۰ روز -->
+    <div class="k-card">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[15px] font-semibold">فروش ۳۰ روز اخیر</h3>
+            <span class="text-[12px] text-midgray">مجموع: @Model.Last30DaysSales.Sum(x => x.Amount).ToString("N0")</span>
+        </div>
+        <div style="height: 180px; display: flex; align-items: flex-end; gap: 3px;">
+            @{
+                var maxAmount = Model.Last30DaysSales.Any() ? Model.Last30DaysSales.Max(x => x.Amount) : 1;
+                if (maxAmount == 0) maxAmount = 1;
+            }
+            @foreach (var d in Model.Last30DaysSales)
+            {
+                var heightPct = (double)(d.Amount / maxAmount) * 100;
+                <div class="flex-1 flex flex-col items-center group relative">
+                    <div class="w-full bg-primary rounded-sm transition-all hover:bg-primary-dark"
+                         style="height: @(heightPct)%; min-height: 2px;"
+                         title="@d.Date — @d.Amount.ToString("N0") تومان (@d.Count سفارش)"></div>
+                    <div class="text-[9px] text-midgray mt-1 rotate-45 origin-left whitespace-nowrap hidden group-hover:block">
+                        @d.Date.Substring(5)
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- محصولات کم‌موجود -->
+    <div class="k-card">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[15px] font-semibold">محصولات کم‌موجود</h3>
+            <a asp-controller="Products" asp-action="Index" class="k-link text-[12px]">همه ←</a>
+        </div>
+        @if (!Model.LowStockProductsList.Any())
+        {
+            <div class="text-center py-8 text-midgray text-[13px]">هیچ محصولی کم‌موجود نیست ✓</div>
+        }
+        else
+        {
+            <div class="space-y-2">
+                @foreach (var p in Model.LowStockProductsList)
+                {
+                    <div class="flex items-center justify-between py-2 border-b border-bordergray last:border-0">
+                        <span class="text-[13px] font-medium truncate">@p.Name</span>
+                        @if (p.Stock == 0)
+                        {
+                            <span class="k-chip k-chip-warning">ناموجود</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-crimson">@p.Stock عدد</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- سفارشات اخیر -->
+    <div class="k-card p-0 overflow-hidden">
+        <div class="p-4 border-b border-bordergray flex items-center justify-between">
+            <h3 class="text-[15px] font-semibold">سفارشات اخیر</h3>
+            <a asp-controller="Orders" asp-action="Index" class="k-link text-[12px]">همه ←</a>
+        </div>
+        @if (!Model.RecentOrders.Any())
+        {
+            <div class="p-8 text-center text-midgray text-[13px]">سفارشی ثبت نشده.</div>
+        }
+        else
+        {
+            <table class="w-full text-[13px]">
+                <tbody>
+                    @foreach (var o in Model.RecentOrders)
+                    {
+                        <tr class="border-b border-bordergray last:border-0 hover:bg-warm">
+                            <td class="p-3 font-mono text-[12px]">@o.OrderNumber</td>
+                            <td class="p-3">@o.ReceiverName</td>
+                            <td class="p-3 font-mono">@o.Total.ToString("N0")</td>
+                            <td class="p-3 text-left">
+                                <a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id"
+                                   class="k-link text-[12px]">مشاهده</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <!-- درخواست‌های برنامه ورزشی اخیر -->
+    <div class="k-card p-0 overflow-hidden">
+        <div class="p-4 border-b border-bordergray flex items-center justify-between">
+            <h3 class="text-[15px] font-semibold">درخواست‌های برنامه ورزشی</h3>
+            <a asp-controller="WorkoutRequests" asp-action="Index" class="k-link text-[12px]">همه ←</a>
+        </div>
+        @if (!Model.RecentWorkoutRequests.Any())
+        {
+            <div class="p-8 text-center text-midgray text-[13px]">درخواستی ثبت نشده.</div>
+        }
+        else
+        {
+            <table class="w-full text-[13px]">
+                <tbody>
+                    @foreach (var w in Model.RecentWorkoutRequests)
+                    {
+                        <tr class="border-b border-bordergray last:border-0 hover:bg-warm">
+                            <td class="p-3">
+                                <div>@w.UserName</div>
+                                <div class="text-[11px] text-midgray font-mono" dir="ltr">@w.UserPhone</div>
+                            </td>
+                            <td class="p-3 text-left">
+                                <a asp-controller="WorkoutRequests" asp-action="Details" asp-route-id="@w.Id"
+                                   class="k-link text-[12px]">مشاهده</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
 </div>

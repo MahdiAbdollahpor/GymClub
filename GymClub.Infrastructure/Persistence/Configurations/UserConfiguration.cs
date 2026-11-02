@@ -12,5 +12,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.DisplayUserName).HasMaxLength(100).IsRequired();
         builder.Property(u => u.Role).HasConversion<int>();
         builder.HasIndex(u => u.PhoneNumber).IsUnique();
+        builder.Property(u => u.IsActive).HasDefaultValue(true);
     }
 }

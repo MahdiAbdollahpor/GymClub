@@ -110,6 +110,14 @@
 
                 @if (SignInManager.IsSignedIn(User))
                 {
+                    @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin")
+                                    || User.IsInRole("ContentWriter") || User.IsInRole("ShopManager")
+                                    || User.IsInRole("Trainer"))
+                    {
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+                           class="k-btn k-btn-primary k-btn-sm">پنل مدیریت</a>
+                    }
+
                     <a asp-controller="Account" asp-action="Index"
                        class="hidden md:inline-block text-[13px] text-midgray hover:text-white transition-colors font-mono" dir="ltr">
                         @User.Identity!.Name

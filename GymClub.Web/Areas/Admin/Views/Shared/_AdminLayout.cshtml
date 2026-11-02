@@ -106,25 +106,63 @@
             </div>
 
             <nav class="py-4">
-                <div class="sidebar-section">محتوا</div>
-                <a asp-area="Admin" asp-controller="Articles" asp-action="Index"
-                   class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Articles" ? "active" : "")">
-                    📄 مقالات
-                </a>
-                <a asp-area="Admin" asp-controller="ArticleCategories" asp-action="Index"
-                   class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "ArticleCategories" ? "active" : "")">
-                    🗂 دسته مقالات
-                </a>
+                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+                   class="sidebar-section">داشبورد</a>
 
-                <div class="sidebar-section">فروشگاه</div>
-                <a asp-area="Admin" asp-controller="Orders" asp-action="Index">🧾 سفارشات</a>
-                <a asp-area="Admin" asp-controller="Products" asp-action="Index">📦 محصولات</a>
-                <a asp-area="Admin" asp-controller="ProductCategories" asp-action="Index">🗂 دسته محصولات</a>
+                @if (User.IsInRole("ContentWriter") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                {
+                    <div class="sidebar-section">محتوا</div>
+                    <a asp-area="Admin" asp-controller="Articles" asp-action="Index"
+                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Articles" ? "active" : "")">
+                        📄 مقالات
+                    </a>
+                    <a asp-area="Admin" asp-controller="ArticleCategories" asp-action="Index"
+                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "ArticleCategories" ? "active" : "")">
+                        🗂 دسته مقالات
+                    </a>
+                }
 
-                <div class="sidebar-section">برنامه ورزشی</div>
-                <a asp-area="Admin" asp-controller="Questionnaires" asp-action="Index">📝 پرسشنامه‌ها</a>
-                <a asp-area="Admin" asp-controller="WorkoutRequests" asp-action="Index">🏋️ درخواست‌های برنامه</a>
-                <a asp-area="Admin" asp-controller="WorkoutRequests" asp-action="Programs">📋 برنامه‌های نوشته‌شده</a>
+                @if (User.IsInRole("ShopManager") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                {
+                    <div class="sidebar-section">فروشگاه</div>
+                    <a asp-area="Admin" asp-controller="Orders" asp-action="Index"
+                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Orders" ? "active" : "")">
+                        🧾 سفارشات
+                    </a>
+                    <a asp-area="Admin" asp-controller="Products" asp-action="Index"
+                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Products" ? "active" : "")">
+                        📦 محصولات
+                    </a>
+                    <a asp-area="Admin" asp-controller="ProductCategories" asp-action="Index"
+                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "ProductCategories" ? "active" : "")">
+                        🗂 دسته محصولات
+                    </a>
+                }
+
+                @if (User.IsInRole("Trainer") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                {
+                    <div class="sidebar-section">برنامه ورزشی</div>
+                    <a asp-area="Admin" asp-controller="Questionnaires" asp-action="Index"
+                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Questionnaires" ? "active" : "")">
+                        📝 پرسشنامه‌ها
+                    </a>
+                    <a asp-area="Admin" asp-controller="WorkoutRequests" asp-action="Index"
+                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "WorkoutRequests" ? "active" : "")">
+                        🏋️ درخواست‌های برنامه
+                    </a>
+                    <a asp-area="Admin" asp-controller="WorkoutRequests" asp-action="Programs">
+                        📋 برنامه‌های نوشته‌شده
+                    </a>
+                }
+
+                @if (User.IsInRole("SuperAdmin"))
+                {
+                    <div class="sidebar-section">مدیریت</div>
+                    <a asp-area="Admin" asp-controller="Users" asp-action="Index"
+                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Users" ? "active" : "")">
+                        👥 کاربران
+                    </a>
+                }
 
                 <div class="sidebar-section">سایر</div>
                 <a asp-area="" asp-controller="Home" asp-action="Index">🏠 مشاهده سایت</a>

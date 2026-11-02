@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "داشبورد مربی";
+}
+
+<div class="mb-6">
+    <h2 class="text-[22px] font-bold">پنل مربی</h2>
+    <p class="text-[14px] text-midgray mt-1">مدیریت پرسشنامه‌ها و طراحی برنامه‌های ورزشی.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <a asp-controller="Questionnaires" asp-action="Index" class="k-card-accent hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">پرسشنامه‌ها</div>
+        <div class="text-[16px] font-semibold mb-1">مدیریت پرسشنامه</div>
+        <div class="text-[13px] text-midgray">ساخت و ویرایش پرسشنامه سلامت</div>
+    </a>
+    <a asp-controller="WorkoutRequests" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">درخواست‌ها</div>
+        <div class="text-[16px] font-semibold mb-1">درخواست‌های برنامه</div>
+        <div class="text-[13px] text-midgray">مشاهده و طراحی برنامه‌های کاربران</div>
+    </a>
+    <a asp-controller="WorkoutRequests" asp-action="Programs" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">برنامه‌ها</div>
+        <div class="text-[16px] font-semibold mb-1">برنامه‌های نوشته‌شده</div>
+        <div class="text-[13px] text-midgray">لیست برنامه‌های طراحی‌شده</div>
+    </a>
+</div>

@@ -1,0 +1,198 @@
+﻿@model GymClub.Application.Users.Queries.GetUserDetails.UserDetailsDto
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "جزئیات کاربر";
+    string OrderStatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.PendingPayment => "منتظر پرداخت",
+        OrderStatus.Paid => "پرداخت‌شده",
+        OrderStatus.Confirmed => "تأیید شده",
+        OrderStatus.Shipped => "ارسال شده",
+        OrderStatus.Cancelled => "لغو شده",
+        _ => "—"
+    };
+    string WorkoutStatusLabel(WorkoutRequestStatus s) => s switch
+    {
+        WorkoutRequestStatus.PendingPayment => "منتظر پرداخت",
+        WorkoutRequestStatus.Paid => "پرداخت شده",
+        WorkoutRequestStatus.AnswersSubmitted => "پرسشنامه ارسال شد",
+        WorkoutRequestStatus.Completed => "تکمیل",
+        WorkoutRequestStatus.Cancelled => "لغو",
+        _ => "—"
+    };
+
+    var isSuperAdmin = User.IsInRole("SuperAdmin");
+    var canChangeRole = isSuperAdmin && Model.Role != UserRole.SuperAdmin;
+}
+
+<div class="mb-4 flex items-center justify-between flex-wrap gap-2">
+    <div>
+        <div class="k-label mb-1">جزئیات کاربر</div>
+        <h2 class="text-[20px] font-bold">@Model.DisplayUserName</h2>
+    </div>
+    <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">بازگشت</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="space-y-4">
+        <div class="k-card">
+            <h4 class="k-label mb-3">اطلاعات</h4>
+            <table class="w-full text-[13px]">
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray w-[40%]">موبایل</td>
+                    <td class="py-2 font-mono" dir="ltr">@Model.PhoneNumber</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">نام</td>
+                    <td class="py-2">@Model.FullName</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">نقش</td>
+                    <td class="py-2">
+                        @switch (Model.Role)
+                        {
+                            case UserRole.SuperAdmin:
+                                <span class="k-chip k-chip-crimson">سوپر ادمین</span>
+                                break;
+                            case UserRole.Admin:
+
+                                <span class="k-chip k-chip-warning">ادمین کل</span>
+                                break;
+                            case UserRole.ContentWriter:
+
+                                <span class="k-chip k-chip-success">نویسنده محتوا</span>
+                                break;
+                            case UserRole.ShopManager:
+
+                                <span class="k-chip k-chip-success">مدیر فروشگاه</span>
+                                break;
+                            case UserRole.Trainer:
+
+                                <span class="k-chip k-chip-success">مربی</span>
+                                break;
+                            default:
+
+                                <span class="k-chip k-chip-neutral">کاربر عادی</span>
+                                break;
+                        }
+                    </td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">وضعیت</td>
+                    <td class="py-2">
+                        @if (!Model.IsActive)
+                        {
+                            <span class="k-chip k-chip-warning">غیرفعال</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-success">فعال</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td class="py-2 text-midgray">عضویت</td>
+                    <td class="py-2 font-mono text-[12px]">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2 space-y-4">
+        <div class="k-card">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="k-label">سفارشات (@Model.Orders.Count)</h4>
+                <a asp-controller="Orders" asp-action="Index" asp-route-search="@Model.PhoneNumber"
+                   class="k-link text-[12px]">همه ←</a>
+            </div>
+            @if (!Model.Orders.Any())
+            {
+                <div class="text-center py-6 text-midgray text-[13px]">سفارشی ندارد.</div>
+            }
+            else
+            {
+                <table class="w-full text-[13px]">
+                    <tbody>
+                        @foreach (var o in Model.Orders)
+                        {
+                            <tr class="border-b border-bordergray last:border-0">
+                                <td class="py-2 font-mono text-[12px]">@o.OrderNumber</td>
+                                <td class="py-2"><span class="k-chip k-chip-neutral">@OrderStatusLabel(o.Status)</span></td>
+                                <td class="py-2 font-mono">@o.Total.ToString("N0")</td>
+                                <td class="py-2 text-left">
+                                    <a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id"
+                                       class="k-link text-[12px]">مشاهده</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <div class="k-card">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="k-label">پرسشنامه‌ها / برنامه ورزشی (@Model.WorkoutRequests.Count)</h4>
+                <a asp-controller="WorkoutRequests" asp-action="Index" asp-route-search="@Model.PhoneNumber"
+                   class="k-link text-[12px]">همه ←</a>
+            </div>
+            @if (!Model.WorkoutRequests.Any())
+            {
+                <div class="text-center py-6 text-midgray text-[13px]">پرسشنامه‌ای پر نکرده.</div>
+            }
+            else
+            {
+                <table class="w-full text-[13px]">
+                    <tbody>
+                        @foreach (var w in Model.WorkoutRequests)
+                        {
+                            <tr class="border-b border-bordergray last:border-0">
+                                <td class="py-2 text-[12px]">@w.QuestionnaireTitle</td>
+                                <td class="py-2"><span class="k-chip k-chip-neutral">@WorkoutStatusLabel(w.Status)</span></td>
+                                <td class="py-2 font-mono">@w.Amount.ToString("N0")</td>
+                                <td class="py-2 text-left">
+                                    <a asp-controller="WorkoutRequests" asp-action="Details" asp-route-id="@w.Id"
+                                       class="k-link text-[12px]">مشاهده</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        @if (Model.Programs.Any())
+        {
+            <div class="k-card">
+                <h4 class="k-label mb-3">برنامه‌های نوشته‌شده (@Model.Programs.Count)</h4>
+                <table class="w-full text-[13px]">
+                    <tbody>
+                        @foreach (var p in Model.Programs)
+                        {
+                            <tr class="border-b border-bordergray last:border-0">
+                                <td class="py-2 font-medium">@p.Title</td>
+                                <td class="py-2 font-mono text-[12px]">@p.DaysCount روز</td>
+                                <td class="py-2">
+                                    @if (p.IsVisibleToUser)
+                                    {
+                                        <span class="k-chip k-chip-success">منتشر</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="k-chip k-chip-neutral">پیش‌نویس</span>
+                                    }
+                                </td>
+                                <td class="py-2 text-left">
+                                    <a asp-controller="WorkoutRequests" asp-action="Details" asp-route-id="@p.RequestId"
+                                       class="k-link text-[12px]">ویرایش</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

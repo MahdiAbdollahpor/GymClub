@@ -17,14 +17,14 @@ public static class DatabaseSeeder
         var userManager = sp.GetRequiredService<UserManager<User>>();
         var roleManager = sp.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-        // 1) نقش‌ها
-        foreach (var role in new[] { "User", "Admin", "SuperAdmin" })
+        // نقش‌ها
+        foreach (var role in new[] { "User", "ContentWriter", "ShopManager", "Trainer", "Admin", "SuperAdmin" })
         {
             if (!await roleManager.RoleExistsAsync(role))
                 await roleManager.CreateAsync(new IdentityRole<Guid>(role));
         }
 
-        // 2) سوپر ادمین پیش‌فرض
+        // سوپر ادمین
         const string superAdminPhone = "09120000000";
         const string superAdminPassword = "SuperAdmin@123";
 
@@ -40,17 +40,24 @@ public static class DatabaseSeeder
                 FullName = "Super Admin",
                 DisplayUserName = "superadmin",
                 Role = UserRole.SuperAdmin,
+                IsActive = true
             };
 
             var result = await userManager.CreateAsync(superAdmin, superAdminPassword);
-            if (!result.Succeeded)
+            if (result.Succeeded)
+                await userManager.AddToRoleAsync(superAdmin, "SuperAdmin");
+        }
+        else
+        {
+            // اگر از قبل بود و نقش ندارد
+            if (!await userManager.IsInRoleAsync(superAdmin, "SuperAdmin"))
+                await userManager.AddToRoleAsync(superAdmin, "SuperAdmin");
+
+            if (!superAdmin.IsActive)
             {
-                logger.LogError("Seeder: cannot create SuperAdmin: {Errors}",
-                    string.Join(", ", result.Errors.Select(e => e.Description)));
-                return;
+                superAdmin.IsActive = true;
+                await userManager.UpdateAsync(superAdmin);
             }
-            await userManager.AddToRoleAsync(superAdmin, "SuperAdmin");
-            logger.LogInformation("Seeder: SuperAdmin created. Phone={Phone}", superAdminPhone);
         }
     }
 }

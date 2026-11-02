@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "داشبورد محتوا";
+}
+
+<div class="mb-6">
+    <h2 class="text-[22px] font-bold">پنل نویسنده محتوا</h2>
+    <p class="text-[14px] text-midgray mt-1">مدیریت مقالات و دسته‌بندی‌های آموزشی.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <a asp-controller="Articles" asp-action="Index" class="k-card-accent hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">مقالات</div>
+        <div class="text-[16px] font-semibold mb-1">مدیریت مقالات</div>
+        <div class="text-[13px] text-midgray">ایجاد، ویرایش و انتشار مقالات آموزشی</div>
+    </a>
+    <a asp-controller="ArticleCategories" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">دسته‌بندی</div>
+        <div class="text-[16px] font-semibold mb-1">دسته‌های مقالات</div>
+        <div class="text-[13px] text-midgray">سازماندهی موضوعی مقالات</div>
+    </a>
+</div>

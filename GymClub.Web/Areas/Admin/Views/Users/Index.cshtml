@@ -1,0 +1,119 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Users.Queries.GetAllUsers.UserListItemDto>
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "کاربران";
+    var isSuperAdmin = User.IsInRole("SuperAdmin");
+}
+
+<div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <form method="get" class="flex gap-2">
+        <input name="search" value="@ViewBag.Search" class="k-input" style="width:300px" placeholder="جستجوی شماره/نام..." />
+        <button class="k-btn k-btn-dark k-btn-md">جستجو</button>
+    </form>
+    <div class="flex items-center gap-3">
+        <span class="text-[13px] text-midgray">@Model.TotalCount کاربر</span>
+        @if (isSuperAdmin)
+        {
+            <a asp-action="Create" class="k-btn k-btn-primary k-btn-md">+ کاربر جدید</a>
+        }
+    </div>
+</div>
+
+<div class="k-card p-0 overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3 w-[50px]">#</th>
+                <th class="text-right p-3">شماره</th>
+                <th class="text-right p-3">نام</th>
+                <th class="text-right p-3">نقش</th>
+                <th class="text-right p-3">وضعیت</th>
+                <th class="text-right p-3">سفارش</th>
+                <th class="text-right p-3">پرسشنامه</th>
+                <th class="text-right p-3">برنامه</th>
+                <th class="text-right p-3">عضویت</th>
+                <th class="text-left p-3">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var u in Model.Items)
+            {
+                <tr class="border-t border-bordergray hover:bg-warm @(u.IsActive ? "" : "opacity-60")">
+                    <td class="p-3 font-mono text-[12px] text-midgray">@u.RowNumber</td>
+                    <td class="p-3 font-mono text-[13px]" dir="ltr">@u.PhoneNumber</td>
+                    <td class="p-3">@u.DisplayUserName</td>
+                    <td class="p-3">
+                        @switch (u.Role)
+                        {
+                            case UserRole.SuperAdmin:
+                                <span class="k-chip k-chip-crimson">سوپر ادمین</span>
+                                break;
+                            case UserRole.Admin:
+                                <span class="k-chip k-chip-warning">ادمین کل</span>
+                                break;
+                            case UserRole.ContentWriter:
+                                <span class="k-chip k-chip-success">نویسنده محتوا</span>
+                                break;
+                            case UserRole.ShopManager:
+                                <span class="k-chip k-chip-success">مدیر فروشگاه</span>
+                                break;
+                            case UserRole.Trainer:
+                                <span class="k-chip k-chip-success">مربی</span>
+                                break;
+                            default:
+                                <span class="k-chip k-chip-neutral">کاربر عادی</span>
+                                break;
+                        }
+                    </td>
+                    <td class="p-3">
+                        @if (!u.IsActive)
+                        {
+                            <span class="k-chip k-chip-warning">غیرفعال</span>
+                        }
+                        else if (u.IsPhoneConfirmed)
+                        {
+
+                            <span class="k-chip k-chip-success">فعال ✓</span>
+                        }
+                        else
+                        {
+
+                            <span class="k-chip k-chip-neutral">تأیید نشده</span>
+                        }
+                    </td>
+                    <td class="p-3 font-mono">@u.OrderCount</td>
+                    <td class="p-3 font-mono">@u.WorkoutRequestCount</td>
+                    <td class="p-3 font-mono">@u.ProgramCount</td>
+                    <td class="p-3 font-mono text-[12px] text-midgray">@u.CreatedAt.ToString("yyyy/MM/dd")</td>
+                    <td class="p-3 text-left whitespace-nowrap">
+                        <a asp-action="Details" asp-route-id="@u.Id" class="k-btn k-btn-ghost k-btn-sm">مشاهده</a>
+                        @if (u.Role != UserRole.SuperAdmin)
+                        {
+                            <form asp-action="ToggleActive" asp-route-id="@u.Id" method="post" class="inline"
+                                  data-confirm-delete
+                                  data-confirm-title="@(u.IsActive ? "غیرفعال کردن کاربر" : "فعال کردن کاربر")"
+                                  data-confirm-message="@(u.IsActive ? $"آیا {u.DisplayUserName} غیرفعال شود؟" : $"آیا {u.DisplayUserName} فعال شود؟")"
+                                  data-confirm-ok="@(u.IsActive ? "غیرفعال کن" : "فعال کن")">
+                                <button type="submit" class="k-btn k-btn-ghost k-btn-sm"
+                                        style="color:@(u.IsActive ? "#CC0000" : "#16A34A")">
+                                    @(u.IsActive ? "غیرفعال" : "فعال")
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="flex justify-center gap-1 mt-6">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.Search"
+               class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">@i</a>
+        }
+    </div>
+}

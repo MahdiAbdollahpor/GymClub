@@ -29,6 +29,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<Guid>>
         var user = await _userManager.FindByNameAsync(req.PhoneNumber);
         if (user is null) return Result<Guid>.Fail("شماره یا رمز عبور اشتباه است");
         if (!user.IsPhoneConfirmed) return Result<Guid>.Fail("شماره تأیید نشده است");
+        if (!user.IsActive) return Result<Guid>.Fail("حساب شما غیرفعال شده است. با پشتیبانی تماس بگیرید.");
 
         var ok = await _userManager.CheckPasswordAsync(user, req.Password);
         if (!ok) return Result<Guid>.Fail("شماره یا رمز عبور اشتباه است");

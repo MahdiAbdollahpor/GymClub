@@ -8,6 +8,7 @@ public class User : IdentityUser<Guid>
     public string FullName { get; set; } = string.Empty;
     public string DisplayUserName { get; set; } = string.Empty;
     public bool IsPhoneConfirmed { get; set; }
+    public bool IsActive { get; set; } = true;
     public UserRole Role { get; set; } = UserRole.User;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }

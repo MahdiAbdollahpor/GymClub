@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace GymClub.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
-[Authorize(Policy = "AdminOnly")]
+[Authorize(Policy = "ShopOnly")]
 [Route("admin/products")]
 public class ProductsController : Controller
 {

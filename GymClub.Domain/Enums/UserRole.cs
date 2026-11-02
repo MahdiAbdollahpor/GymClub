@@ -3,6 +3,9 @@
 public enum UserRole
 {
     User = 0,
-    Admin = 1,
-    SuperAdmin = 2
+    ContentWriter = 1,
+    ShopManager = 2,
+    Trainer = 3,
+    Admin = 4,
+    SuperAdmin = 5
 }

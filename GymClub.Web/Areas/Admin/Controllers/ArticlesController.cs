@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace GymClub.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
-[Authorize(Policy = "AdminOnly")]
+[Authorize(Policy = "ContentOnly")]
 [Route("admin/articles")]
 public class ArticlesController : Controller
 {

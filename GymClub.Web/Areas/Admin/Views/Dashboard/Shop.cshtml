@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "داشبورد فروشگاه";
+}
+
+<div class="mb-6">
+    <h2 class="text-[22px] font-bold">پنل مدیر فروشگاه</h2>
+    <p class="text-[14px] text-midgray mt-1">مدیریت محصولات، دسته‌بندی و سفارشات.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <a asp-controller="Orders" asp-action="Index" class="k-card-accent hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">سفارشات</div>
+        <div class="text-[16px] font-semibold mb-1">مدیریت سفارشات</div>
+        <div class="text-[13px] text-midgray">تأیید، ارسال و لغو سفارش‌ها</div>
+    </a>
+    <a asp-controller="Products" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">محصولات</div>
+        <div class="text-[16px] font-semibold mb-1">مدیریت محصولات</div>
+        <div class="text-[13px] text-midgray">افزودن، ویرایش و حذف محصولات</div>
+    </a>
+    <a asp-controller="ProductCategories" asp-action="Index" class="k-card hover:border-primary transition-colors text-decoration-none">
+        <div class="k-label mb-2">دسته‌بندی</div>
+        <div class="text-[16px] font-semibold mb-1">دسته‌های محصولات</div>
+        <div class="text-[13px] text-midgray">سازماندهی موضوعی محصولات</div>
+    </a>
+</div>

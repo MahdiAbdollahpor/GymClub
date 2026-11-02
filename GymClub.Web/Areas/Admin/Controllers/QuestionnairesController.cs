@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GymClub.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
-[Authorize(Policy = "AdminOnly")]
+[Authorize(Policy = "TrainerOnly")]
 [Route("admin/questionnaires")]
 public class QuestionnairesController : Controller
 {

@@ -1,0 +1,61 @@
+﻿@model GymClub.Application.Users.Commands.CreateUserByAdmin.CreateUserByAdminCommand
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "کاربر جدید (SuperAdmin)";
+}
+
+<div class="k-card max-w-[640px]">
+    <div class="k-alert k-alert-warning mb-4">
+        ⚠️ این فرم برای سوپر ادمین است. کاربر بدون نیاز به تأیید OTP ساخته می‌شود و می‌تواند بلافاصله وارد شود.
+    </div>
+
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="k-alert mb-4"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div>
+                <label asp-for="PhoneNumber" class="k-form-label">شماره موبایل</label>
+                <input asp-for="PhoneNumber" class="k-input" dir="ltr" placeholder="09121234567" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="FullName" class="k-form-label">نام و نام خانوادگی</label>
+                <input asp-for="FullName" class="k-input" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DisplayUserName" class="k-form-label">نام نمایشی</label>
+            <input asp-for="DisplayUserName" class="k-input" />
+            <span asp-validation-for="DisplayUserName" class="text-danger"></span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div>
+                <label asp-for="Password" class="k-form-label">رمز عبور</label>
+                <input asp-for="Password" type="password" class="k-input" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="Role" class="k-form-label">نقش</label>
+                <select asp-for="Role" class="k-select">
+                    <option value="@UserRole.User">کاربر عادی</option>
+                    <option value="@UserRole.ContentWriter">نویسنده محتوا</option>
+                    <option value="@UserRole.ShopManager">مدیر فروشگاه</option>
+                    <option value="@UserRole.Trainer">مربی</option>
+                    <option value="@UserRole.Admin">ادمین کل</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="k-btn k-btn-primary k-btn-md">ایجاد</button>
+            <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
