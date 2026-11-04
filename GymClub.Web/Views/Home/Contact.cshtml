@@ -1,0 +1,103 @@
+﻿@model GymClub.Application.Contact.Commands.SubmitContactMessage.SubmitContactMessageCommand
+@{
+    ViewData["Title"] = "تماس با ما";
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">ارتباط</div>
+            <h2>تماس با ما</h2>
+        </div>
+    </div>
+
+    @if (TempData["ContactSuccess"] != null)
+    {
+        <div class="k-alert k-alert-success mb-6">@TempData["ContactSuccess"]</div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- اطلاعات تماس -->
+        <div class="lg:col-span-1 space-y-4">
+            <div class="k-card-accent">
+                <div class="k-label mb-3">آدرس</div>
+                <p class="text-[14px] text-darkgray leading-relaxed">
+                    تهران، خیابان ولیعصر،<br />
+                    نبش کوچه بهار، پلاک ۱۲۳، طبقه اول
+                </p>
+            </div>
+
+            <div class="k-card">
+                <div class="k-label mb-3">تلفن</div>
+                <p class="font-mono text-[16px] font-bold" dir="ltr">021-12345678</p>
+                <p class="font-mono text-[14px] text-midgray mt-1" dir="ltr">0912-123-4567</p>
+            </div>
+
+            <div class="k-card">
+                <div class="k-label mb-3">ایمیل</div>
+                <p class="font-mono text-[14px] text-darkgray" dir="ltr">info@gymclub.ir</p>
+            </div>
+
+            <div class="k-card">
+                <div class="k-label mb-3">ساعات پاسخگویی</div>
+                <p class="text-[13px] text-darkgray">شنبه تا پنجشنبه — ۹:۰۰ تا ۲۱:۰۰</p>
+            </div>
+        </div>
+
+        <!-- فرم تماس -->
+        <div class="lg:col-span-2">
+            <div class="k-card">
+                <h3 class="text-[18px] font-bold mb-1">پیام خود را بفرستید</h3>
+                <p class="text-[13px] text-midgray mb-6">حداکثر ۲۴ ساعت آینده پاسخ می‌دهیم.</p>
+
+                <form asp-action="Contact" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="k-alert mb-4"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label asp-for="FullName" class="k-form-label">نام و نام خانوادگی</label>
+                            <input asp-for="FullName" class="k-input" placeholder="مثلاً: علی رضایی" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label asp-for="PhoneNumber" class="k-form-label">شماره موبایل</label>
+                            <input asp-for="PhoneNumber" class="k-input" dir="ltr" placeholder="09121234567" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Email" class="k-form-label">ایمیل (اختیاری)</label>
+                            <input asp-for="Email" type="email" class="k-input" dir="ltr" placeholder="you@example.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Subject" class="k-form-label">موضوع</label>
+                            <input asp-for="Subject" class="k-input" placeholder="مثلاً: سؤال درباره عضویت" />
+                            <span asp-validation-for="Subject" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label asp-for="Message" class="k-form-label">متن پیام</label>
+                        <textarea asp-for="Message" class="k-textarea" rows="6" placeholder="پیام خود را بنویسید..."></textarea>
+                        <span asp-validation-for="Message" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="k-btn k-btn-primary k-btn-lg mt-4">ارسال پیام</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- نقشه -->
+    <div class="mt-8 k-card p-0 overflow-hidden">
+        <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=51.38%2C35.69%2C51.42%2C35.72&amp;layer=mapnik&amp;marker=35.705%2C51.40"
+                style="width:100%; height:380px; border:0;"
+                loading="lazy">
+        </iframe>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

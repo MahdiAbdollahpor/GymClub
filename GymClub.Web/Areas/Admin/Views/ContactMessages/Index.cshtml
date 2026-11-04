@@ -1,0 +1,83 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Contact.Queries.GetContactMessages.ContactMessageDto>
+@{
+    ViewData["Title"] = "پیام‌های تماس";
+}
+
+<div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <form method="get" class="flex gap-2 flex-wrap">
+        <input name="search" value="@ViewBag.Search" class="k-input" style="width:240px" placeholder="جستجو..." />
+        <select name="isRead" class="k-select" style="width:160px">
+            <option value="">همه</option>
+            <option value="false" selected="@(ViewBag.IsRead as bool? == false)">خوانده‌نشده</option>
+            <option value="true" selected="@(ViewBag.IsRead as bool? == true)">خوانده‌شده</option>
+        </select>
+        <button class="k-btn k-btn-dark k-btn-md">فیلتر</button>
+    </form>
+    <span class="text-[13px] text-midgray">@Model.TotalCount پیام</span>
+</div>
+
+<div class="space-y-3">
+    @if (!Model.Items.Any())
+    {
+        <div class="k-card text-center py-12 text-midgray">هیچ پیامی ثبت نشده است.</div>
+    }
+    @foreach (var m in Model.Items)
+    {
+        <div class="k-card @(m.IsRead ? "" : "border-primary")">
+            <div class="flex items-start justify-between gap-3 flex-wrap">
+                <div class="flex-1 min-w-[200px]">
+                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                        <span class="font-semibold text-[15px]">@m.Subject</span>
+                        @if (!m.IsRead)
+                        {
+                            <span class="k-chip k-chip-crimson">جدید</span>
+                        }
+                    </div>
+                    <div class="text-[13px] text-midgray mb-2">
+                        @m.FullName — <span class="font-mono" dir="ltr">@m.PhoneNumber</span>
+                        @if (!string.IsNullOrEmpty(m.Email))
+                        {
+                            <span> — <span dir="ltr">@m.Email</span></span>
+                        }
+                        <span class="mx-2">|</span>
+                        <span class="font-mono text-[12px]">@m.CreatedAt.ToString("yyyy/MM/dd HH:mm")</span>
+                    </div>
+                    <p class="text-[14px] text-darkgray leading-relaxed whitespace-pre-line">@m.Message</p>
+                    @if (!string.IsNullOrEmpty(m.AdminReply))
+                    {
+                        <div class="mt-3 p-3 bg-lightgray rounded">
+                            <div class="k-label mb-1">پاسخ ادمین</div>
+                            <p class="text-[13px]">@m.AdminReply</p>
+                        </div>
+                    }
+                </div>
+                <div class="flex flex-col gap-2 min-w-[120px]">
+                    @if (!m.IsRead)
+                    {
+                        <form asp-action="MarkRead" asp-route-id="@m.Id" method="post">
+                            <button class="k-btn k-btn-ghost k-btn-sm w-100">خوانده شد</button>
+                        </form>
+                    }
+                    <a href="tel:@m.PhoneNumber" class="k-btn k-btn-ghost k-btn-sm">تماس</a>
+                    <form asp-action="Delete" asp-route-id="@m.Id" method="post"
+                          data-confirm-delete
+                          data-confirm-title="حذف پیام"
+                          data-confirm-message="آیا این پیام حذف شود؟">
+                        <button class="k-btn k-btn-ghost k-btn-sm w-100" style="color:#CC0000">حذف</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="flex justify-center gap-1 mt-6">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.Search" asp-route-isRead="@ViewBag.IsRead"
+               class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">@i</a>
+        }
+    </div>
+}

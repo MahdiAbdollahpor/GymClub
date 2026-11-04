@@ -32,6 +32,7 @@ public class AppDbContext
     public DbSet<WorkoutRequest> WorkoutRequests => Set<WorkoutRequest>();
     public DbSet<WorkoutAnswer> WorkoutAnswers => Set<WorkoutAnswer>();
     public DbSet<WorkoutProgram> WorkoutPrograms => Set<WorkoutProgram>();
+    public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
     public DbSet<WorkoutProgramDay> WorkoutProgramDays => Set<WorkoutProgramDay>();
     public DbSet<WorkoutExercise> WorkoutExercises => Set<WorkoutExercise>();
     public DbSet<WorkoutPaymentTransaction> WorkoutPaymentTransactions => Set<WorkoutPaymentTransaction>();

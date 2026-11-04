@@ -30,5 +30,6 @@ public interface IApplicationDbContext
     DbSet<OrderItem> OrderItems { get; }
     DbSet<DiscountCode> DiscountCodes { get; }
     DbSet<PaymentTransaction> PaymentTransactions { get; }
+    DbSet<ContactMessage> ContactMessages { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

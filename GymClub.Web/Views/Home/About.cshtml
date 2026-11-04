@@ -1,0 +1,178 @@
+﻿@{
+    ViewData["Title"] = "درباره باشگاه";
+}
+
+<!-- Hero -->
+<section class="k-hero" style="background-image:url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1600'); min-height: 380px;">
+    <div class="k-container w-full">
+        <div class="k-hero-content">
+            <div class="k-hero-eyebrow">درباره GymClub</div>
+            <h1>جایی برای ساختن بهترین نسخه خودت</h1>
+            <p>بیش از یک دهه تجربه در پرورش قهرمانان و همراهی با ورزشکاران در مسیر رسیدن به اهدافشان.</p>
+        </div>
+    </div>
+</section>
+
+<!-- داستان ما -->
+<section class="k-container py-16">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div>
+            <div class="k-label mb-3">داستان ما</div>
+            <h2 class="text-[32px] font-bold leading-tight mb-6">
+                از یک سالن کوچک تا<br>بزرگ‌ترین باشگاه تخصصی بدن‌سازی
+            </h2>
+            <div class="space-y-4 text-[15px] text-darkgray leading-relaxed">
+                <p>
+                    باشگاه GymClub در سال ۱۳۹۲ با یک سالن کوچک و سه دستگاه تمرینی شروع به کار کرد.
+                    هدف ما از روز اول ساده بود: ایجاد فضایی که هر کسی — از مبتدی تا حرفه‌ای — بتواند
+                    با خیال راحت و انگیزه‌ی بالا تمرین کند.
+                </p>
+                <p>
+                    امروز با افتخار میزبان بیش از ۱۲۰۰ عضو فعال هستیم و در فضایی بالغ بر ۸۰۰ متر مربع،
+                    مجهزترین تجهیزات روز دنیا را در اختیار شما قرار داده‌ایم. تیم ۱۵ نفره‌ی مربیان
+                    حرفه‌ای ما با مدارک بین‌المللی آماده‌ی همراهی شما در این مسیرند.
+                </p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="aspect-square rounded-lg overflow-hidden bg-lightgray">
+                <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600" class="w-full h-full object-cover" alt="" />
+            </div>
+            <div class="aspect-square rounded-lg overflow-hidden bg-lightgray mt-8">
+                <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600" class="w-full h-full object-cover" alt="" />
+            </div>
+            <div class="aspect-square rounded-lg overflow-hidden bg-lightgray">
+                <img src="https://images.unsplash.com/photo-1546483875-ad9014c88eba?w=600" class="w-full h-full object-cover" alt="" />
+            </div>
+            <div class="aspect-square rounded-lg overflow-hidden bg-lightgray mt-8">
+                <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600" class="w-full h-full object-cover" alt="" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- آمار -->
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">در یک نگاه</div>
+            <h2>باشگاه در اعداد</h2>
+        </div>
+    </div>
+    <div class="k-stats-grid">
+        <div class="k-stat-item">
+            <div class="k-stat-num">۱۲+</div>
+            <div class="k-stat-label">سال تجربه</div>
+        </div>
+        <div class="k-stat-item">
+            <div class="k-stat-num">۸۰۰+</div>
+            <div class="k-stat-label">متر مربع فضای تمرین</div>
+        </div>
+        <div class="k-stat-item">
+            <div class="k-stat-num">۱۵+</div>
+            <div class="k-stat-label">مربی حرفه‌ای</div>
+        </div>
+        <div class="k-stat-item">
+            <div class="k-stat-num">۱۲۰۰+</div>
+            <div class="k-stat-label">عضو فعال</div>
+        </div>
+    </div>
+</section>
+
+<!-- تجهیزات -->
+<section class="k-container py-16">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">امکانات</div>
+            <h2>تجهیزات و امکانات</h2>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @{
+            var features = new[] {
+                ("🏋️", "تجهیزات حرفه‌ای", "دستگاه‌های بدنسازی برندهای Hammer Strength و Technogym"),
+                ("🏃", "بخش هوازی", "تردمیل، الپتیکال، دوچرخه ثابت و قایق‌رانی"),
+                ("🥊", "بخش ورزش‌های رزمی", "سالن اختصاصی بوکس، کیک‌بوکسینگ و MMA"),
+                ("🧘", "کلاس‌های گروهی", "یوگا، پیلاتس، ایروبیک و TRX"),
+                ("💪", "بخش وزنه‌برداری", "پلتفرم اختصاصی هالتر و ددلیفت"),
+                ("🚿", "رختکن و دوش", "رختکن مجهز با دوش آب گرم و کمد اختصاصی"),
+                };
+        }
+        @foreach (var (icon, title, desc) in features)
+        {
+            <div class="k-card">
+                <div class="text-[32px] mb-3">@icon</div>
+                <h3 class="text-[16px] font-semibold mb-2">@title</h3>
+                <p class="text-[13px] text-midgray leading-relaxed">@desc</p>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- مربیان -->
+<section class="bg-warm py-16">
+    <div class="k-container">
+        <div class="k-section-header">
+            <div>
+                <div class="k-label mb-2">تیم ما</div>
+                <h2>مربیان حرفه‌ای</h2>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            @{
+                var trainers = new[] {
+                        ("علی رضایی", "مربی بدنسازی و فیتنس", "۱۲ سال تجربه — مدرک بین‌المللی ISSA"),
+                        ("سارا محمدی", "مربی یوگا و پیلاتس", "۸ سال تجربه — مدرک Yoga Alliance"),
+                        ("محمد کریمی", "مربی ورزش‌های رزمی", "۱۰ سال تجربه — قهرمان سابق کشوری"),
+                        };
+            }
+            @foreach (var (name, role, bio) in trainers)
+            {
+                <div class="k-card text-center">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span class="text-primary text-[28px] font-bold">@name[0]</span>
+                    </div>
+                    <h3 class="text-[16px] font-semibold mb-1">@name</h3>
+                    <div class="text-[13px] text-primary mb-2">@role</div>
+                    <p class="text-[12px] text-midgray">@bio</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ساعات کاری + CTA -->
+<section class="k-container py-16">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="k-card-accent">
+            <div class="k-label mb-3">ساعات کاری</div>
+            <h3 class="text-[20px] font-bold mb-4">هر روز هفته آماده‌ی پذیرایی از شما هستیم</h3>
+            <table class="w-full text-[14px]">
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">شنبه تا چهارشنبه</td>
+                    <td class="py-2 font-mono font-medium">۶:۰۰ — ۲۳:۰۰</td>
+                </tr>
+                <tr class="border-b border-bordergray">
+                    <td class="py-2 text-midgray">پنجشنبه</td>
+                    <td class="py-2 font-mono font-medium">۶:۰۰ — ۲۲:۰۰</td>
+                </tr>
+                <tr>
+                    <td class="py-2 text-midgray">جمعه</td>
+                    <td class="py-2 font-mono font-medium">۸:۰۰ — ۲۰:۰۰</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="k-card-dark">
+            <div class="k-label mb-3" style="color:#FF1A1A">شروع کن</div>
+            <h3 class="text-[22px] font-bold mb-3">همین امروز اولین قدم را بردار</h3>
+            <p class="text-midgray text-[14px] mb-6 leading-relaxed">
+                برای دریافت برنامه ورزشی اختصاصی، پرسشنامه سلامت را پر کن و برنامه‌ات را از مربیان ما دریافت کن.
+            </p>
+            <div class="flex gap-2">
+                <a asp-controller="Workout" asp-action="Index" class="k-btn k-btn-primary k-btn-md">دریافت برنامه</a>
+                <a asp-controller="Products" asp-action="Index" class="k-btn k-btn-secondary k-btn-md" style="color:#fff;border-color:#fff">فروشگاه</a>
+            </div>
+        </div>
+    </div>
+</section>

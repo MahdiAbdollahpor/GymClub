@@ -109,6 +109,22 @@
                 <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
                    class="sidebar-section">داشبورد</a>
 
+
+               
+
+
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+                {
+                    <div class="sidebar-section">مدیریت</div>
+                    <a asp-area="Admin" asp-controller="ContactMessages" asp-action="Index">
+                        ✉️ پیام‌های تماس
+                    </a>
+                    @if (User.IsInRole("SuperAdmin"))
+                    {
+                        <a asp-area="Admin" asp-controller="Users" asp-action="Index">👥 کاربران</a>
+                    }
+                }
+
                 @if (User.IsInRole("ContentWriter") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                 {
                     <div class="sidebar-section">محتوا</div>
@@ -155,14 +171,9 @@
                     </a>
                 }
 
-                @if (User.IsInRole("SuperAdmin"))
-                {
-                    <div class="sidebar-section">مدیریت</div>
-                    <a asp-area="Admin" asp-controller="Users" asp-action="Index"
-                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Users" ? "active" : "")">
-                        👥 کاربران
-                    </a>
-                }
+               
+
+               
 
                 <div class="sidebar-section">سایر</div>
                 <a asp-area="" asp-controller="Home" asp-action="Index">🏠 مشاهده سایت</a>

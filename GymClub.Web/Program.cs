@@ -32,10 +32,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddControllersWithViews();
 
-builder.Services.Configure<SecurityStampValidatorOptions>(options =>
-{
-    options.ValidationInterval = TimeSpan.FromSeconds(30);
-});
+
 
 
 builder.Services.AddHttpContextAccessor();
