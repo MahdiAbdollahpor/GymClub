@@ -1,0 +1,43 @@
+﻿@{
+    ViewData["Title"] = "خطای سراسری";
+}
+
+<section class="k-container py-20 max-w-[680px]">
+    <div class="k-card text-center" style="padding: 56px 40px;">
+        <div class="font-mono text-[88px] font-bold text-primary leading-none mb-4">500</div>
+
+        <div class="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center"
+             style="background: rgba(204,0,0,.08)">
+            <svg class="w-8 h-8" style="color:#CC0000" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                      d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+            </svg>
+        </div>
+
+        <h1 class="text-[24px] font-bold mb-3">خطایی رخ داد</h1>
+        <p class="text-[14px] text-midgray leading-relaxed mb-4">
+            متأسفانه در پردازش درخواست شما مشکلی پیش آمد. تیم پشتیبانی ما از این خطا مطلع شد.
+        </p>
+
+        @if (ViewBag.ErrorId != null)
+        {
+            <div class="k-alert mb-6" style="font-size: 12px; text-align: right;">
+                <div class="k-label mb-1">شناسه خطا</div>
+                <div class="font-mono" dir="ltr" style="word-break: break-all;">@ViewBag.ErrorId</div>
+                <div class="text-[11px] text-midgray mt-1">این شناسه را به پشتیبانی اطلاع دهید.</div>
+            </div>
+        }
+
+        <div class="flex flex-wrap gap-2 justify-center">
+            <a asp-controller="Home" asp-action="Index" class="k-btn k-btn-primary k-btn-md">
+                بازگشت به خانه
+            </a>
+            <button type="button" onclick="location.reload()" class="k-btn k-btn-ghost k-btn-md">
+                تلاش مجدد
+            </button>
+            <a asp-controller="Home" asp-action="Contact" class="k-btn k-btn-ghost k-btn-md">
+                تماس با پشتیبانی
+            </a>
+        </div>
+    </div>
+</section>

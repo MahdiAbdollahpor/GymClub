@@ -1,0 +1,80 @@
+﻿@model GymClub.Application.Discounts.Commands.UpdateDiscountCode.UpdateDiscountCodeCommand
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "ویرایش کد تخفیف";
+}
+
+<div class="k-card max-w-[720px]">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        <div asp-validation-summary="ModelOnly" class="k-alert mb-4"></div>
+        <input type="hidden" asp-for="Id" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label asp-for="Code" class="k-form-label">کد</label>
+                <input asp-for="Code" class="k-input" dir="ltr" placeholder="SUMMER2026" style="text-transform:uppercase" />
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="Value" class="k-form-label">مقدار</label>
+                <input asp-for="Value" type="number" step="any" class="k-input" dir="ltr" />
+                <div class="k-helper" id="valueHint">درصد تخفیف (۰ تا ۱۰۰)</div>
+                <span asp-validation-for="Value" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="Value" class="k-form-label">مقدار</label>
+                <input asp-for="Value" type="number" step="any" class="k-input" dir="ltr" />
+                <div class="k-helper" id="valueHint">درصد تخفیف (۰ تا ۱۰۰)</div>
+                <span asp-validation-for="Value" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="MaxDiscountAmount" class="k-form-label">سقف تخفیف (تومان) — اختیاری</label>
+                <input asp-for="MaxDiscountAmount" type="number" step="any" class="k-input" dir="ltr" />
+                <div class="k-helper">فقط برای درصدی</div>
+            </div>
+            <div>
+                <label asp-for="MinOrderAmount" class="k-form-label">حداقل مبلغ سفارش (تومان) — اختیاری</label>
+                <input asp-for="MinOrderAmount" type="number" step="any" class="k-input" dir="ltr" />
+            </div>
+            <div>
+                <label asp-for="MaxUsageCount" class="k-form-label">حداکثر استفاده — اختیاری</label>
+                <input asp-for="MaxUsageCount" type="number" step="1" class="k-input" dir="ltr" />
+                <div class="k-helper">خالی = بی‌نهایت</div>
+            </div>
+            <div>
+                <label asp-for="StartsAt" class="k-form-label">تاریخ شروع — اختیاری</label>
+                <input asp-for="StartsAt" type="datetime-local" class="k-input" dir="ltr" />
+            </div>
+            <div>
+                <label asp-for="ExpiresAt" class="k-form-label">تاریخ پایان — اختیاری</label>
+                <input asp-for="ExpiresAt" type="datetime-local" class="k-input" dir="ltr" />
+            </div>
+        </div>
+
+        <div class="mt-4 mb-6">
+            <label class="k-check-label">
+                <input asp-for="IsActive" class="k-checkbox" />
+                <span>فعال</span>
+            </label>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="k-btn k-btn-primary k-btn-md">ذخیره</button>
+            <a asp-action="Index" class="k-btn k-btn-ghost k-btn-md">انصراف</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const typeSel = document.getElementById('typeSelect');
+        const hint = document.getElementById('valueHint');
+        function updateHint() {
+            hint.textContent = typeSel.value === '1'
+                ? 'درصد تخفیف (۰ تا ۱۰۰)'
+                : 'مبلغ تخفیف (تومان)';
+        }
+        typeSel.addEventListener('change', updateHint);
+        updateHint();
+    </script>
+}

@@ -1,6 +1,13 @@
 ﻿@model GymClub.Application.Products.Dtos.ProductDetailsDto
 @{
     ViewData["Title"] = Model.Name;
+    ViewData["Description"] = Model.Description.Length > 160
+        ? Model.Description.Substring(0, 157) + "..."
+        : Model.Description;
+    var mainImg = Model.Images.FirstOrDefault(i => i.IsMain) ?? Model.Images.FirstOrDefault();
+    ViewData["OgImage"] = mainImg?.Url;
+    ViewData["OgType"] = "product";
+    ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/products/{Model.Slug}";
 }
 
 <section class="k-container py-12">

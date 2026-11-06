@@ -141,18 +141,10 @@
                 @if (User.IsInRole("ShopManager") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                 {
                     <div class="sidebar-section">فروشگاه</div>
-                    <a asp-area="Admin" asp-controller="Orders" asp-action="Index"
-                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Orders" ? "active" : "")">
-                        🧾 سفارشات
-                    </a>
-                    <a asp-area="Admin" asp-controller="Products" asp-action="Index"
-                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Products" ? "active" : "")">
-                        📦 محصولات
-                    </a>
-                    <a asp-area="Admin" asp-controller="ProductCategories" asp-action="Index"
-                       class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "ProductCategories" ? "active" : "")">
-                        🗂 دسته محصولات
-                    </a>
+                    <a asp-area="Admin" asp-controller="Orders" asp-action="Index">🧾 سفارشات</a>
+                    <a asp-area="Admin" asp-controller="Products" asp-action="Index">📦 محصولات</a>
+                    <a asp-area="Admin" asp-controller="ProductCategories" asp-action="Index">🗂 دسته محصولات</a>
+                    <a asp-area="Admin" asp-controller="DiscountCodes" asp-action="Index">🏷 کدهای تخفیف</a>
                 }
 
                 @if (User.IsInRole("Trainer") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))

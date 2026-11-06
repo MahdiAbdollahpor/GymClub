@@ -1,0 +1,169 @@
+﻿@model GymClub.Application.Search.Queries.GlobalSearch.GlobalSearchResultDto
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = $"جستجو — {Model.Query}";
+}
+
+<section class="k-container py-12">
+    <div class="k-section-header">
+        <div>
+            <div class="k-label mb-2">جستجو</div>
+            <h2>نتایج جستجو برای «@Model.Query»</h2>
+        </div>
+        <span class="k-count text-[20px] font-bold">@Model.TotalResults.ToString("N0") نتیجه</span>
+    </div>
+
+    <!-- Search box -->
+    <form action="/search" method="get" class="mb-8">
+        <div class="flex gap-2 max-w-[700px]">
+            <input name="q" value="@Model.Query" class="k-input" placeholder="جستجو در مقالات و محصولات..." />
+            <button type="submit" class="k-btn k-btn-primary k-btn-md">جستجو</button>
+        </div>
+    </form>
+
+    @if (string.IsNullOrWhiteSpace(Model.Query))
+    {
+        <div class="k-card text-center py-16 text-midgray">
+            <div class="text-[24px] mb-2">🔍</div>
+            <p class="text-[14px]">چیزی برای جستجو وارد کنید.</p>
+        </div>
+    }
+    else if (Model.TotalResults == 0)
+    {
+        <div class="k-card text-center py-16">
+            <div class="text-[40px] mb-3">🔍</div>
+            <h3 class="text-[18px] font-semibold mb-2">نتیجه‌ای پیدا نشد</h3>
+            <p class="text-midgray text-[14px]">برای عبارت «@Model.Query» چیزی پیدا نکردیم. جستجو را تغییر دهید.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-6 border-b border-bordergray pb-3">
+            <button type="button" class="search-tab active k-btn k-btn-primary k-btn-sm" data-tab="all">همه (@Model.TotalResults)</button>
+            @if (Model.Articles.Any())
+            {
+                <button type="button" class="search-tab k-btn k-btn-ghost k-btn-sm" data-tab="articles">مقالات (@Model.Articles.Count)</button>
+            }
+            @if (Model.Products.Any())
+            {
+                <button type="button" class="search-tab k-btn k-btn-ghost k-btn-sm" data-tab="products">محصولات (@Model.Products.Count)</button>
+            }
+        </div>
+
+        <!-- Articles -->
+        <div id="results-articles" class="search-section mb-8 @(Model.Articles.Any() ? "" : "hidden")">
+            @if (Model.Articles.Any())
+            {
+                <div class="k-label mb-3">مقالات (@Model.Articles.Count)</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach (var a in Model.Articles)
+                    {
+                        <a asp-controller="Articles" asp-action="Details" asp-route-slug="@a.Slug"
+                           class="k-product-card text-decoration-none">
+                            <div class="k-product-image">
+                                @if (!string.IsNullOrEmpty(a.CoverImageUrl))
+                                {
+                                    <img src="@a.CoverImageUrl" alt="@a.Title" />
+                                }
+                                else
+                                {
+                                    <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                }
+                        </div>
+                        <div class="k-product-body">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="k-chip k-chip-crimson">
+                                    @(a.Type == ArticleType.Training ? "تمرین"
+                                                                : a.Type == ArticleType.Nutrition ? "تغذیه" : "باشگاه")
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(a.CategoryTitle))
+                                    {
+                                        <span class="k-chip k-chip-neutral">@a.CategoryTitle</span>
+                                    }
+                                </div>
+                                <h3 class="k-product-name">@a.Title</h3>
+                                <p class="k-product-sub">@a.Summary</p>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Products -->
+        <div id="results-products" class="search-section mb-8 @(Model.Products.Any() ? "" : "hidden")">
+            @if (Model.Products.Any())
+            {
+                <div class="k-label mb-3">محصولات (@Model.Products.Count)</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    @foreach (var p in Model.Products)
+                    {
+                        <a asp-controller="Products" asp-action="Details" asp-route-slug="@p.Slug"
+                           class="k-product-card text-decoration-none">
+                            <div class="k-product-image">
+                                @if (!string.IsNullOrEmpty(p.MainImageUrl))
+                                {
+                                    <img src="@p.MainImageUrl" alt="@p.Name" />
+                                }
+                                else
+                                {
+                                    <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                                              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                }
+                            </div>
+                            <div class="k-product-body">
+                                <div class="k-chip k-chip-neutral mb-2">@p.CategoryTitle</div>
+                                <h3 class="k-product-name">@p.Name</h3>
+                                <div class="mt-auto pt-3 flex items-baseline gap-2">
+                                    @if (p.HasDiscount)
+                                    {
+                                        <span class="k-product-price">@p.FinalPrice.ToString("N0") تومان</span>
+                                        <span class="text-[12px] text-midgray line-through">@p.Price.ToString("N0")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="k-product-price">@p.Price.ToString("N0") تومان</span>
+                                    }
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@section Scripts {
+    <script>
+        // Tabs
+        document.querySelectorAll('.search-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.search-tab').forEach(t => {
+                    t.classList.remove('active', 'k-btn-primary');
+                    t.classList.add('k-btn-ghost');
+                });
+                tab.classList.add('active', 'k-btn-primary');
+                tab.classList.remove('k-btn-ghost');
+
+                const target = tab.dataset.tab;
+                document.querySelectorAll('.search-section').forEach(s => s.classList.add('hidden'));
+
+                if (target === 'all') {
+                    document.querySelectorAll('.search-section').forEach(s => {
+                        if (s.querySelector('.k-product-card')) s.classList.remove('hidden');
+                    });
+                } else {
+                    const el = document.getElementById('results-' + target);
+                    if (el) el.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+}

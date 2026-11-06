@@ -1,8 +1,13 @@
-﻿@{
+﻿@model GymClub.Application.Home.Queries.GetHomePageData.HomePageDataDto
+@using GymClub.Domain.Enums
+@{
     ViewData["Title"] = "خانه";
+    ViewData["Description"] = "باشگاه بدن‌سازی GymClub — تجهیزات مدرن، مربیان حرفه‌ای، برنامه‌های اختصاصی تمرینی و تغذیه‌ای.";
+    ViewData["OgImage"] = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200";
+    ViewData["OgType"] = "website";
 }
 
-<!-- Hero -->
+<!-- ═══════════ HERO ═══════════ -->
 <section class="k-hero" style="background-image:url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600')">
     <div class="k-container w-full">
         <div class="k-hero-content">
@@ -10,89 +15,229 @@
             <h1>قدرت را از اینجا شروع کن.</h1>
             <p>باشگاه بدن‌سازی حرفه‌ای با تجهیزات مدرن، مربیان متخصص و برنامه‌های تمرینی و تغذیه‌ای اختصاصی برای هر هدفی.</p>
             <div class="flex flex-wrap gap-3">
-                <a asp-controller="Products" asp-action="Index" class="k-btn k-btn-primary k-btn-lg">
-                    مشاهده فروشگاه
-                </a>
+                <a asp-controller="Products" asp-action="Index" class="k-btn k-btn-primary k-btn-lg">مشاهده فروشگاه</a>
                 <a asp-controller="Workout" asp-action="Index"
                    class="k-btn k-btn-secondary k-btn-lg"
-                   style="color:#fff;border-color:#fff">
-                    دریافت برنامه ورزشی
-                </a>
+                   style="color:#fff;border-color:#fff">دریافت برنامه ورزشی</a>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Stats -->
-<section class="k-container py-20">
+<!-- ═══════════ STATS ═══════════ -->
+<section class="k-container py-16">
     <div class="k-section-header">
         <div>
             <div class="k-label mb-2">در یک نگاه</div>
             <h2>باشگاه در اعداد</h2>
         </div>
-        <span class="k-chip k-chip-crimson">2026</span>
+        <span class="k-chip k-chip-crimson">@DateTime.Now.Year</span>
     </div>
-
     <div class="k-stats-grid">
         <div class="k-stat-item">
-            <div class="k-stat-num">800+</div>
+            <div class="k-stat-num">۱۲+</div>
+            <div class="k-stat-label">سال تجربه</div>
+        </div>
+        <div class="k-stat-item">
+            <div class="k-stat-num">۸۰۰+</div>
             <div class="k-stat-label">متر مربع فضای تمرین</div>
         </div>
         <div class="k-stat-item">
-            <div class="k-stat-num">15+</div>
+            <div class="k-stat-num">۱۵+</div>
             <div class="k-stat-label">مربی حرفه‌ای</div>
         </div>
         <div class="k-stat-item">
-            <div class="k-stat-num">1,200</div>
+            <div class="k-stat-num">۱۲۰۰+</div>
             <div class="k-stat-label">عضو فعال</div>
         </div>
-        <div class="k-stat-item">
-            <div class="k-stat-num">24/7</div>
-            <div class="k-stat-label">دسترسی به باشگاه</div>
+    </div>
+</section>
+
+<!-- ═══════════ دسته‌بندی محصولات ═══════════ -->
+@if (Model.TopCategories.Any())
+{
+    <section class="k-container pb-16">
+        <div class="k-section-header">
+            <div>
+                <div class="k-label mb-2">فروشگاه</div>
+                <h2>دسته‌بندی‌ها</h2>
+            </div>
+            <a asp-controller="Products" asp-action="Index" class="k-link text-[14px]">همه محصولات ←</a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            @foreach (var c in Model.TopCategories)
+            {
+                <a asp-controller="Products" asp-action="Index" asp-route-categoryId="@c.Id"
+                   class="k-card hover:border-primary transition-colors text-decoration-none group">
+                    <div class="k-label mb-2">@c.ProductCount محصول</div>
+                    <div class="text-[16px] font-semibold group-hover:text-primary transition-colors">@c.Title</div>
+                    <div class="text-[24px] text-primary mt-2 group-hover:translate-x-1 transition-transform inline-block">→</div>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+<!-- ═══════════ محصولات تخفیف‌دار ═══════════ -->
+@{
+    var specials = Model.FeaturedProducts.Concat(Model.NewProducts).ToList();
+}
+@if (specials.Any())
+{
+    <section class="k-container pb-16">
+        <div class="k-section-header">
+            <div>
+                <div class="k-label mb-2">پیشنهاد ویژه</div>
+                <h2>محصولات منتخب</h2>
+            </div>
+            <a asp-controller="Products" asp-action="Index" class="k-link text-[14px]">همه محصولات ←</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach (var p in specials)
+            {
+                <a asp-controller="Products" asp-action="Details" asp-route-slug="@p.Slug"
+                   class="k-product-card text-decoration-none group">
+                    <div class="k-product-image">
+                        @if (!string.IsNullOrEmpty(p.MainImageUrl))
+                        {
+                            <img src="@p.MainImageUrl" alt="@p.Name" />
+                        }
+                        else
+                        {
+                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        }
+                        @if (p.HasDiscount)
+                        {
+                            <span class="absolute top-2 right-2 k-chip k-chip-crimson">
+                                @(((p.Price - p.FinalPrice) / p.Price * 100).ToString("N0"))% تخفیف
+                            </span>
+                        }
+                    </div>
+                    <div class="k-product-body">
+                        <div class="k-chip k-chip-neutral mb-2">@p.CategoryTitle</div>
+                        <h3 class="k-product-name group-hover:text-primary transition-colors">@p.Name</h3>
+                        <div class="mt-auto pt-3 flex items-baseline gap-2">
+                            @if (p.HasDiscount)
+                            {
+                                <span class="k-product-price">@p.FinalPrice.ToString("N0") تومان</span>
+                                <span class="text-[12px] text-midgray line-through">@p.Price.ToString("N0")</span>
+                            }
+                            else
+                            {
+                                <span class="k-product-price">@p.Price.ToString("N0") تومان</span>
+                            }
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+<!-- ═══════════ چرا GymClub ═══════════ -->
+<section class="bg-warm py-16">
+    <div class="k-container">
+        <div class="k-section-header">
+            <div>
+                <div class="k-label mb-2">مزایا</div>
+                <h2>چرا GymClub؟</h2>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @{
+                var features = new[] {
+                        ("🎯", "برنامه اختصاصی", "برنامه تمرینی و تغذیه‌ای متناسب با بدن و هدف شما طراحی می‌شود."),
+                        ("👨‍🏫", "مربیان حرفه‌ای", "تیم ۱۵ نفره‌ی مربیان با مدارک بین‌المللی و تجربه‌ی چندساله."),
+                        ("🏋️", "تجهیزات مدرن", "دستگاه‌های Hammer Strength و Technogym در فضایی بالغ بر ۸۰۰ متر."),
+                        ("📦", "فروشگاه تخصصی", "مکمل‌های اصل، ابزار تمرینی و پوشاک ورزشی با ضمانت اصالت."),
+                        ("🕐", "دسترسی ۲۴/۷", "هر ساعتی که بخواهی، باشگاه آماده‌ی پذیرایی است."),
+                        ("💬", "پشتیبانی واقعی", "پاسخ به سؤالات تمرینی و تغذیه‌ای شما توسط مربیان متخصص."),
+                        };
+            }
+            @foreach (var (icon, title, desc) in features)
+            {
+                <div class="k-card hover:border-primary transition-colors">
+                    <div class="text-[32px] mb-3">@icon</div>
+                    <h3 class="text-[16px] font-semibold mb-2">@title</h3>
+                    <p class="text-[13px] text-midgray leading-relaxed">@desc</p>
+                </div>
+            }
         </div>
     </div>
 </section>
 
-<!-- Articles placeholder -->
-<section class="k-container pb-20">
-    <div class="k-section-header">
-        <div>
-            <div class="k-label mb-2">آموزش</div>
-            <h2>آخرین مقالات</h2>
+<!-- ═══════════ آخرین مقالات ═══════════ -->
+@if (Model.LatestArticles.Any())
+{
+    <section class="k-container py-16">
+        <div class="k-section-header">
+            <div>
+                <div class="k-label mb-2">آموزش</div>
+                <h2>آخرین مقالات</h2>
+            </div>
+            <a asp-controller="Articles" asp-action="Index" class="k-link text-[14px]">همه مقالات ←</a>
         </div>
-        <a asp-controller="Articles" asp-action="Index" class="k-link">همه مقالات ←</a>
-    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="k-card-accent">
-            <span class="k-chip k-chip-crimson mb-3">تمرین</span>
-            <h3 class="text-[18px] font-semibold mt-2 mb-2">چطور با دستگاه اسمیت تمرین کنیم؟</h3>
-            <p class="text-[14px] text-midgray leading-relaxed">
-                راهنمای کامل استفاده از دستگاه اسمیت برای تمرین سینه، سرشانه و پا.
-            </p>
-            <a asp-controller="Articles" asp-action="Index" class="k-link mt-3 inline-block">ادامه مطلب ←</a>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var a in Model.LatestArticles)
+            {
+                <a asp-controller="Articles" asp-action="Details" asp-route-slug="@a.Slug"
+                   class="k-product-card text-decoration-none group">
+                    <div class="k-product-image">
+                        @if (!string.IsNullOrEmpty(a.CoverImageUrl))
+                        {
+                            <img src="@a.CoverImageUrl" alt="@a.Title" />
+                        }
+                        else
+                        {
+                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        }
+                </div>
+                <div class="k-product-body">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="k-chip k-chip-crimson">
+                            @(a.Type == ArticleType.Training ? "تمرین"
+                                                    : a.Type == ArticleType.Nutrition ? "تغذیه" : "باشگاه")
+                            </span>
+                            @if (a.HasVideo)
+                            {
+                                <span class="k-chip k-chip-neutral">ویدیو</span>
+                            }
+                        </div>
+                        <h3 class="k-product-name group-hover:text-primary transition-colors">@a.Title</h3>
+                        <p class="k-product-sub">@a.Summary</p>
+                        <div class="mt-auto pt-2 flex items-center justify-between text-[12px] text-midgray">
+                            <span>@a.PublishedAt?.ToString("yyyy/MM/dd")</span>
+                            <span>@a.ViewCount بازدید</span>
+                        </div>
+                    </div>
+                </a>
+            }
         </div>
-        <div class="k-card-accent">
-            <span class="k-chip k-chip-crimson mb-3">تغذیه</span>
-            <h3 class="text-[18px] font-semibold mt-2 mb-2">پروتئین وی: چه زمانی و چقدر؟</h3>
-            <p class="text-[14px] text-midgray leading-relaxed">
-                بهترین زمان مصرف پروتئین وی برای رشد عضلات و ریکاوری پس از تمرین.
-            </p>
-            <a asp-controller="Articles" asp-action="Index" class="k-link mt-3 inline-block">ادامه مطلب ←</a>
-        </div>
-    </div>
-</section>
+    </section>
+}
 
-<!-- CTA -->
+<!-- ═══════════ CTA پایانی ═══════════ -->
 <section class="k-container pb-20">
-    <div class="k-card-dark text-center">
-        <div class="k-label mb-3" style="color:#FF1A1A">برنامه ورزشی اختصاصی</div>
-        <h2 class="text-[26px] font-bold mb-3">برنامه تمرینی متناسب با بدن خودت می‌خوای؟</h2>
-        <p class="text-midgray text-[15px] mb-6 max-w-[600px] mx-auto">
-            پرسشنامه سلامت را پر کن، مربیان ما برنامه اختصاصی برایت طراحی می‌کنند.
-        </p>
-        <a asp-controller="Workout" asp-action="Index" class="k-btn k-btn-primary k-btn-md">
-            شروع کنیم
-        </a>
+    <div class="k-card-dark relative overflow-hidden">
+        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+            <div class="lg:col-span-2">
+                <div class="k-label mb-3" style="color:#FF1A1A">برنامه ورزشی اختصاصی</div>
+                <h2 class="text-[26px] font-bold mb-3">برنامه‌ای که فقط برای تو نوشته می‌شود</h2>
+                <p class="text-midgray text-[15px] leading-relaxed max-w-[600px]">
+                    پرسشنامه سلامت را پر کن، مربیان ما برنامه‌ی تمرینی و تغذیه‌ای اختصاصی برایت طراحی می‌کنند و در داشبوردت قرار می‌دهند.
+                </p>
+            </div>
+            <div class="flex lg:justify-end gap-2">
+                <a asp-controller="Workout" asp-action="Index" class="k-btn k-btn-primary k-btn-lg">شروع کن</a>
+            </div>
+        </div>
     </div>
 </section>

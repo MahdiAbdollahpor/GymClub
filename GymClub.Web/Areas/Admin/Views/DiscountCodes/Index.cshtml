@@ -1,0 +1,97 @@
+﻿@model GymClub.Application.Common.Models.PagedResult<GymClub.Application.Discounts.Dtos.DiscountCodeDto>
+@using GymClub.Domain.Enums
+@{
+    ViewData["Title"] = "کدهای تخفیف";
+}
+
+<div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <form method="get" class="flex gap-2">
+        <input name="search" value="@ViewBag.Search" class="k-input" style="width:240px" placeholder="جستجوی کد..." />
+        <select name="isActive" class="k-select" style="width:150px">
+            <option value="">همه</option>
+            <option value="true" selected="@(ViewBag.IsActive as bool? == true)">فعال</option>
+            <option value="false" selected="@(ViewBag.IsActive as bool? == false)">غیرفعال</option>
+        </select>
+        <button class="k-btn k-btn-dark k-btn-md">فیلتر</button>
+    </form>
+    <a asp-action="Create" class="k-btn k-btn-primary k-btn-md">+ کد تخفیف جدید</a>
+</div>
+
+<div class="k-card p-0 overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-lightgray">
+            <tr class="text-[12px] uppercase tracking-wider text-darkgray">
+                <th class="text-right p-3">کد</th>
+                <th class="text-right p-3">مقدار</th>
+                <th class="text-right p-3">استفاده</th>
+                <th class="text-right p-3">بازه</th>
+                <th class="text-right p-3">وضعیت</th>
+                <th class="text-left p-3">عملیات</th>
+            </tr>
+        </thead>
+        <tbody class="text-[14px]">
+            @foreach (var d in Model.Items)
+            {
+                <tr class="border-t border-bordergray hover:bg-warm">
+                    <td class="p-3 font-mono font-bold">@d.Code</td>
+                    <td class="p-3 font-mono">
+                        @d.TypeLabel
+                        @if (d.MaxDiscountAmount.HasValue)
+                        {
+                            <div class="text-[11px] text-midgray">سقف: @d.MaxDiscountAmount.Value.ToString("N0")</div>
+                        }
+                    </td>
+                    <td class="p-3 font-mono text-[13px]">
+                        @d.UsedCount / @(d.MaxUsageCount?.ToString() ?? "∞")
+                        @if (d.RemainingUses.HasValue)
+                        {
+                            <div class="text-[11px] text-midgray">باقیمانده: @d.RemainingUses</div>
+                        }
+                    </td>
+                    <td class="p-3 font-mono text-[11px] text-midgray">
+                        @if (d.StartsAt.HasValue || d.ExpiresAt.HasValue)
+                        {
+                            <div>از: @(d.StartsAt?.ToString("yyyy/MM/dd") ?? "—")</div>
+                            <div>تا: @(d.ExpiresAt?.ToString("yyyy/MM/dd") ?? "—")</div>
+                        }
+                        else
+                        {
+
+                            <span>بی‌نهایت</span>
+                        }
+                    </td>
+                    <td class="p-3"><span class="k-chip @d.StatusChip">@d.StatusLabel</span></td>
+                    <td class="p-3 text-left whitespace-nowrap">
+                        <a asp-action="Edit" asp-route-id="@d.Id" class="k-btn k-btn-ghost k-btn-sm">ویرایش</a>
+                        <form asp-action="Toggle" asp-route-id="@d.Id" method="post" class="inline">
+                            <button type="submit" class="k-btn k-btn-ghost k-btn-sm">
+                                @(d.IsActive ? "غیرفعال" : "فعال")
+                            </button>
+                        </form>
+                        <form asp-action="Delete" asp-route-id="@d.Id" method="post" class="inline"
+                              data-confirm-delete
+                              data-confirm-title="حذف کد تخفیف"
+                              data-confirm-message="آیا کد «@d.Code» حذف شود؟">
+                            <button type="submit" class="k-btn k-btn-ghost k-btn-sm" style="color:#CC0000">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Items.Any())
+            {
+                <tr><td colspan="6" class="p-6 text-center text-midgray">کد تخفیفی ثبت نشده است.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="flex justify-center gap-1 mt-6">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.Search" asp-route-isActive="@ViewBag.IsActive"
+               class="k-btn @(i == Model.Page ? "k-btn-primary" : "k-btn-ghost") k-btn-sm">@i</a>
+        }
+    </div>
+}

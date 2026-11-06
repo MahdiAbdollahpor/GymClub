@@ -40,15 +40,18 @@ public class CreateArticleCommandHandler : IRequestHandler<CreateArticleCommand,
     private readonly IVideoStorageService _videos;
     private readonly ICurrentUserService _current;
     private readonly IDateTimeProvider _clock;
+    private readonly IHtmlSanitizer _sanitizer;
 
     public CreateArticleCommandHandler(
         IApplicationDbContext db,
         IImageStorageService images,
         IVideoStorageService videos,
         ICurrentUserService current,
-        IDateTimeProvider clock)
+        IDateTimeProvider clock,
+        IHtmlSanitizer sanitizer)
     {
         _db = db; _images = images; _videos = videos; _current = current; _clock = clock;
+        _sanitizer = sanitizer;
     }
 
     public async Task<Result<Guid>> Handle(CreateArticleCommand req, CancellationToken ct)
@@ -89,12 +92,13 @@ public class CreateArticleCommandHandler : IRequestHandler<CreateArticleCommand,
         while (await _db.Articles.AnyAsync(a => a.Slug == slug, ct))
             slug = $"{slugBase}-{Guid.NewGuid().ToString("N").Substring(0, 8)}";
 
+        var safeHtml = _sanitizer.Sanitize(req.ContentHtml);
         var entity = new Article
         {
             Title = req.Title.Trim(),
             Slug = slug,
             Summary = req.Summary.Trim(),
-            ContentHtml = req.ContentHtml,
+            ContentHtml = safeHtml,
             CoverImageUrl = coverUrl,
             VideoUrl = videoUrl,
             Type = req.Type,

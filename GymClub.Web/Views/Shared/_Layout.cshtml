@@ -10,8 +10,42 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] — GymClub</title>
+    @{
+        var pageTitle = ViewData["Title"]?.ToString() ?? "GymClub";
+        var pageDescription = ViewData["Description"]?.ToString()
+        ?? "باشگاه بدن‌سازی GymClub — تجهیزات مدرن، مربیان حرفه‌ای، برنامه‌های اختصاصی تمرینی و تغذیه‌ای.";
+        var pageImage = ViewData["OgImage"]?.ToString()
+        ?? $"{Context.Request.Scheme}://{Context.Request.Host}/images/og-default.jpg";
+        var pageUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+        var pageType = ViewData["OgType"]?.ToString() ?? "website";
+    }
+    <title>@pageTitle — GymClub</title>
 
+    <!-- Meta -->
+    <meta name="description" content="@pageDescription" />
+    <meta name="author" content="GymClub" />
+    <meta name="theme-color" content="#CC0000" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="@pageType" />
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@pageDescription" />
+    <meta property="og:url" content="@pageUrl" />
+    <meta property="og:image" content="@pageImage" />
+    <meta property="og:site_name" content="GymClub" />
+    <meta property="og:locale" content="fa_IR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@pageTitle" />
+    <meta name="twitter:description" content="@pageDescription" />
+    <meta name="twitter:image" content="@pageImage" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="@(ViewData["CanonicalUrl"] ?? pageUrl)" />
+
+    <!-- Favicon (اختیاری) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +95,13 @@
     </script>
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+
 </head>
+
+<form id="__AjaxAntiForgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
 <body class="bg-warm font-sans text-pure">
 
     <!-- Navigation Bar -->
@@ -96,6 +136,13 @@
                 }
             </nav>
 
+            <button type="button" id="searchToggle" class="k-icon-btn" aria-label="جستجو">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </button>
+
             <!-- Actions -->
             <div class="flex items-center gap-2">
 
@@ -125,7 +172,8 @@
                        class="hidden md:inline-block text-[13px] text-midgray hover:text-white transition-colors font-mono" dir="ltr">
                         @User.Identity!.Name
                     </a>
-                    <form method="post" asp-controller="Auth" asp-action="Logout" class="inline">
+                    <form method="post" asp-controller="Auth" asp-action="Logout"  class="inline">
+                        @Html.AntiForgeryToken()
                         <button type="submit" class="k-btn k-btn-ghost k-btn-sm">خروج</button>
                     </form>
                 }
@@ -155,6 +203,8 @@
                 <a asp-controller="Articles" asp-action="Index" class="k-mobile-link">آموزش</a>
                 <a asp-controller="Products" asp-action="Index" class="k-mobile-link">فروشگاه</a>
                 <a asp-controller="Workout" asp-action="Index" class="k-mobile-link">برنامه ورزشی</a>
+                <a href="#" onclick="document.getElementById('searchModal').classList.remove('hidden'); document.getElementById('mobileMenu').classList.add('hidden'); setTimeout(() => document.getElementById('searchInput').focus(), 100); return false;"
+                   class="k-mobile-link">🔍 جستجو</a>
                 <a asp-controller="Home" asp-action="Contact" class="k-mobile-link">تماس</a>
             </div>
         </div>
@@ -220,10 +270,122 @@
     <!-- Confirm Modal (partial from step 4) -->
     <partial name="_ConfirmModal" />
 
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/60" onclick="document.getElementById('searchModal').classList.add('hidden')"></div>
+        <div class="fixed inset-0 flex items-start justify-center pt-[15vh] p-4">
+            <div class="bg-white rounded-xl w-full max-w-[640px] overflow-hidden"
+                 style="box-shadow: 0 8px 40px rgba(0,0,0,.28)">
+                <form action="/search" method="get" class="flex items-center border-b border-bordergray">
+                    <svg class="w-5 h-5 mx-4 text-midgray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input id="searchInput" name="q" class="flex-1 py-4 px-1 border-0 outline-none text-[16px]"
+                           placeholder="جستجو در محصولات و مقالات..." autocomplete="off" />
+                    <button type="button" onclick="document.getElementById('searchModal').classList.add('hidden')"
+                            class="mx-3 text-midgray hover:text-pure">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </form>
+                <div id="searchResults" class="max-h-[400px] overflow-y-auto p-2">
+                    <div class="text-center py-8 text-midgray text-[13px]">برای جستجو تایپ کنید...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const toggle = document.getElementById('searchToggle');
+            const modal = document.getElementById('searchModal');
+            const input = document.getElementById('searchInput');
+            const results = document.getElementById('searchResults');
+            let timeout;
+
+            toggle?.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                setTimeout(() => input.focus(), 50);
+            });
+
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                }
+                // Ctrl+K
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    modal.classList.remove('hidden');
+                    setTimeout(() => input.focus(), 50);
+                }
+            });
+
+            input?.addEventListener('input', function () {
+                clearTimeout(timeout);
+                const q = this.value.trim();
+                if (q.length < 2) {
+                    results.innerHTML = '<div class="text-center py-8 text-midgray text-[13px]">حداقل ۲ کاراکتر تایپ کنید...</div>';
+                    return;
+                }
+                timeout = setTimeout(async () => {
+                    try {
+                        const r = await fetch('/search/suggest?q=' + encodeURIComponent(q));
+                        const j = await r.json();
+                        renderResults(j);
+                    } catch {
+                        results.innerHTML = '<div class="p-4 text-center text-midgray text-[13px]">خطا</div>';
+                    }
+                }, 250);
+            });
+
+            function renderResults(j) {
+                const articles = j.articles || [];
+                const products = j.products || [];
+                if (!articles.length && !products.length) {
+                    results.innerHTML = `<div class="p-4 text-center text-midgray text-[13px]">نتیجه‌ای برای «${j.query}» پیدا نشد.</div>`;
+                    return;
+                }
+                let html = '';
+                if (products.length) {
+                    html += '<div class="px-3 py-2 text-[11px] uppercase text-midgray font-semibold tracking-wider">محصولات</div>';
+                    html += products.map(p => `
+                        <a href="/products/${p.slug}" class="flex items-center gap-3 p-2 hover:bg-warm rounded transition-colors">
+                            <div class="w-10 h-10 bg-lightgray rounded overflow-hidden flex-shrink-0">
+                                ${p.mainImageUrl ? `<img src="${p.mainImageUrl}" class="w-full h-full object-cover" />` : ''}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[14px] font-medium truncate">${p.name}</div>
+                                <div class="text-[11px] text-midgray">${p.categoryTitle}</div>
+                            </div>
+                            <div class="text-[12px] font-mono text-primary">${p.price.toLocaleString()}</div>
+                        </a>
+                    `).join('');
+                }
+                if (articles.length) {
+                    html += '<div class="px-3 py-2 text-[11px] uppercase text-midgray font-semibold tracking-wider">مقالات</div>';
+                    html += articles.map(a => `
+                        <a href="/articles/${a.slug}" class="flex items-center gap-3 p-2 hover:bg-warm rounded transition-colors">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[14px] font-medium truncate">${a.title}</div>
+                                <div class="text-[11px] text-midgray">${a.categoryTitle || ''}</div>
+                            </div>
+                        </a>
+                    `).join('');
+                }
+                html += `<a href="/search?q=${encodeURIComponent(j.query)}" class="block p-3 text-center text-[13px] text-primary hover:underline border-t border-bordergray mt-2">مشاهده همه نتایج ←</a>`;
+                results.innerHTML = html;
+            }
+        })();
+    </script>
+
     <!-- Toast Container -->
     <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] space-y-2"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
     <!-- Global Cart & Toast scripts -->
     <script>
@@ -286,6 +448,13 @@
         });
 
         // ─── Global addToCart ───
+
+                function getToken() {
+            return document.querySelector('#__AjaxAntiForgeryForm input[name="__RequestVerificationToken"]')?.value
+                ?? document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                ?? '';
+        }
+
         window.addToCart = async function (productId, quantity = 1, btn = null) {
             const orig = btn ? btn.innerHTML : null;
             if (btn) { btn.disabled = true; btn.innerHTML = 'در حال افزودن...'; }

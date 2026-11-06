@@ -5,6 +5,7 @@ using GymClub.Infrastructure.Persistence;
 using GymClub.Infrastructure.Services;
 using GymClub.Infrastructure.Services.FileStorage;
 using GymClub.Infrastructure.Services.Payments;
+using GymClub.Infrastructure.Services.Security;
 using GymClub.Infrastructure.Services.Sms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -68,7 +69,7 @@ public static class DependencyInjection
             services.AddScoped<ISmsService, MockSmsService>();
         // در آینده: else if SmsIr/Kavenegar ...
 
-
+        services.AddScoped<IHtmlSanitizer, HtmlSanitizerService>();
 
         // ─── File Storage ───
         services.Configure<FileStorageOptions>(configuration.GetSection("FileStorage"));

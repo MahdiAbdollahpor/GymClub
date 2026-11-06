@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace GymClub.Web.Controllers;
@@ -28,6 +29,7 @@ public class AuthController : Controller
     public IActionResult Register() => View();
 
     [HttpPost("/auth/register")]
+    [EnableRateLimiting("otp")]
     public async Task<IActionResult> Register(RegisterCommand cmd, CancellationToken ct)
     {
         if (!ModelState.IsValid) return View(cmd);
@@ -79,6 +81,7 @@ public class AuthController : Controller
     }
 
     [HttpPost("/auth/login")]
+    [EnableRateLimiting("otp")]
     public async Task<IActionResult> Login(LoginCommand cmd, string? returnUrl, CancellationToken ct)
     {
         if (!ModelState.IsValid) return View(cmd);
@@ -114,6 +117,7 @@ public class AuthController : Controller
     public IActionResult ForgotPassword() => View();
 
     [HttpPost("/auth/forgot-password")]
+    [EnableRateLimiting("otp")]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand cmd, CancellationToken ct)
     {
         if (!ModelState.IsValid) return View(cmd);

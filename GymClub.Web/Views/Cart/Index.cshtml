@@ -3,6 +3,11 @@
     ViewData["Title"] = "سبد خرید";
 }
 
+
+<form id="__AjaxAntiForgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
 <section class="k-container py-12">
     <div class="k-section-header">
         <div>
@@ -79,30 +84,48 @@
 
 @section Scripts {
     <script>
+        function getToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+        }
+
         async function post(url, data) {
             const resp = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': getToken()   // ← هدر درست
+                },
                 body: new URLSearchParams(data)
             });
+            if (!resp.ok) {
+                console.error('HTTP', resp.status, await resp.text());
+                return { success: false, message: 'خطای شبکه (' + resp.status + ')' };
+            }
             return resp.json();
         }
-        function reloadOnSuccess(r) { if (r.success) location.reload(); else alert(r.message); }
+
+        function reloadOnSuccess(r) {
+            if (r.success) location.reload();
+            else window.toast?.error(r.message || 'خطا') || alert(r.message || 'خطا');
+        }
 
         document.querySelectorAll('.cart-inc').forEach(b => b.onclick = async () => {
             const row = b.closest('.k-card');
             const qty = parseInt(row.querySelector('.cart-qty').value) + 1;
             reloadOnSuccess(await post('/cart/update', { cartItemId: b.dataset.id, quantity: qty }));
         });
+
         document.querySelectorAll('.cart-dec').forEach(b => b.onclick = async () => {
             const row = b.closest('.k-card');
             const qty = Math.max(0, parseInt(row.querySelector('.cart-qty').value) - 1);
             reloadOnSuccess(await post('/cart/update', { cartItemId: b.dataset.id, quantity: qty }));
         });
+
         document.querySelectorAll('.cart-qty').forEach(inp => inp.onchange = async () => {
             const qty = parseInt(inp.value) || 1;
             reloadOnSuccess(await post('/cart/update', { cartItemId: inp.dataset.id, quantity: qty }));
         });
+
         document.querySelectorAll('.cart-remove').forEach(b => b.onclick = async () => {
             ConfirmModal.open({
                 title: 'حذف از سبد',

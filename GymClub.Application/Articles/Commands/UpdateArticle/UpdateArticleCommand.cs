@@ -42,14 +42,17 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
     private readonly IImageStorageService _images;
     private readonly IVideoStorageService _videos;
     private readonly IDateTimeProvider _clock;
+    private readonly IHtmlSanitizer _sanitizer;
 
     public UpdateArticleCommandHandler(
         IApplicationDbContext db,
         IImageStorageService images,
         IVideoStorageService videos,
-        IDateTimeProvider clock)
+        IDateTimeProvider clock,
+        IHtmlSanitizer sanitizer)
     {
         _db = db; _images = images; _videos = videos; _clock = clock;
+        _sanitizer = sanitizer;
     }
 
     public async Task<Result> Handle(UpdateArticleCommand req, CancellationToken ct)
@@ -60,6 +63,7 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
 
         var oldCover = entity.CoverImageUrl;
         var oldVideo = entity.VideoUrl;
+        var safeHtml = _sanitizer.Sanitize(req.ContentHtml);
 
         try
         {
@@ -100,7 +104,7 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
 
         entity.Title = req.Title.Trim();
         entity.Summary = req.Summary.Trim();
-        entity.ContentHtml = req.ContentHtml;
+        entity.ContentHtml = safeHtml;
         entity.Type = req.Type;
         entity.CategoryId = req.CategoryId;
         entity.UpdatedAt = _clock.UtcNow;

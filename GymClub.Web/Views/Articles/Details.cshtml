@@ -2,6 +2,10 @@
 @using GymClub.Domain.Enums
 @{
     ViewData["Title"] = Model.Title;
+    ViewData["Description"] = Model.Summary;
+    ViewData["OgImage"] = Model.CoverImageUrl;
+    ViewData["OgType"] = "article";
+    ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/articles/{Model.Slug}";
 }
 
 <article class="k-container py-12 max-w-[820px]">
